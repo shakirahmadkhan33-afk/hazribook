@@ -1,0 +1,516 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Hazri Book (offline, unlimited sheets)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<style>
+:root{--bg:#16120a;--page:#fffaf0;--ink:#3b2a06;--gold:#b8892b;--gl:#f0d27a;--gd:#7a5a14;--line:#d9bd6b;--in:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d0b06}}
+:root[data-theme="dark"]{--bg:#0d0b06}
+html,body{height:100%;margin:0}body{background:var(--bg);font-family:Georgia,'Times New Roman',serif;display:flex;flex-direction:column;overflow:hidden}
+#bar{display:flex;align-items:center;gap:6px;padding:7px 8px;background:linear-gradient(135deg,#8a6414,#e7c766 50%,#9a7218);color:#2a1d02;box-shadow:0 2px 10px #0008}
+#bar h1{margin:0;font-size:17px;letter-spacing:1.5px;flex:1;white-space:nowrap}
+#bar button{white-space:nowrap;background:#2a1d02;color:var(--gl);border:0;border-radius:8px;padding:6px 11px;font:bold 15px Helvetica,Arial}
+#bar input{width:42px;text-align:center;font-size:14px;border:0;border-radius:6px;padding:5px;background:#fff8}
+#stage{flex:1;position:relative;perspective:2200px;touch-action:pan-y;overflow:hidden}
+.page{position:absolute;inset:0;overflow-y:auto;background:var(--page);color:var(--ink);transform-origin:left center;backface-visibility:hidden;transition:transform .4s ease,opacity .4s;padding:12px 12px 40px;box-sizing:border-box;box-shadow:inset 8px 0 14px -8px #7a5a1488;font-family:Helvetica,Arial,sans-serif}
+.page.gone{transform:rotateY(-100deg);opacity:0;pointer-events:none}
+h2{font:bold 15px Georgia,serif;letter-spacing:1px;color:#fff;background:linear-gradient(90deg,var(--gd),var(--gold));margin:16px 0 8px;padding:6px 10px;border-radius:6px;display:flex;justify-content:space-between;align-items:center}
+h2 input{width:70px;height:24px;border-radius:5px;border:0;font-size:13px}
+.pn{text-align:center;font:italic 12px Georgia;color:var(--gd)}
+label{display:block;font-size:11px;color:var(--gd);margin:8px 0 2px;font-weight:bold;letter-spacing:.5px}
+input,select{font:15px Helvetica,Arial;color:#222;background:var(--in);border:1px solid var(--line);border-radius:7px;box-sizing:border-box;width:100%;padding:8px;outline:0}
+input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 2px #e7c76688}
+.ph{display:flex;gap:6px}.ph select{width:46%}
+.g{display:grid;border:1.5px solid var(--gold);border-radius:6px;overflow:hidden}
+.g>*{border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.g input{border:0;border-radius:0;padding:7px 3px;font-size:13px;text-align:center;height:34px;background:transparent}
+.g .t{background:#f6e7b4;font:bold 11px Helvetica;text-align:center;padding:7px 2px;color:var(--gd)}
+.g .d{display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px;background:#fbf1cf}
+.g input.hol{text-align:center;font-weight:bold;color:#b00020;caret-color:transparent}
+.tot{display:flex;justify-content:space-between;margin-top:8px;font-weight:bold;font-size:13px;color:var(--gd);gap:8px;flex-wrap:wrap}
+.sg{width:100%;height:34px;border:0;background:transparent;color:var(--gold);font-size:16px;padding:1px;display:flex;align-items:center;justify-content:center}.sg img{max-width:100%;max-height:100%}
+.big .sg{height:64px;border:1px dashed var(--gold);border-radius:8px;background:#fff}
+#pm{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:99;padding:14px;box-sizing:border-box}
+#pm>div{background:var(--page);border:2px solid var(--gold);border-radius:12px;padding:12px;width:100%;max-width:460px;font-family:Helvetica,Arial}
+#pm b{color:var(--gd);font-size:14px}#pc{width:100%;height:auto;aspect-ratio:5/2;background:#fff;border:1px solid var(--line);border-radius:8px;touch-action:none;margin:8px 0;display:block}
+#pm .bt{display:flex;gap:8px}#pm button{flex:1;padding:10px;border:0;border-radius:8px;font:bold 14px Helvetica;background:#e9dcae;color:#2a1d02}#pm button.ok{background:linear-gradient(135deg,#9a7218,#e7c766);}
+#mn{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;z-index:98}
+#mn>div{background:var(--page);width:100%;border-radius:18px 18px 0 0;border-top:3px solid var(--gold);padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));box-sizing:border-box;font-family:Helvetica,Arial;max-height:90%;overflow:auto}
+#mn h3{margin:0 0 4px;font:bold 17px Georgia;color:var(--gd)}#mn small{color:var(--gd);display:block;margin-bottom:10px;font-size:12px}
+#mn button,#mn label.b{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;margin:7px 0;padding:13px;border:1px solid var(--line);border-radius:10px;background:#fff;color:#2a1d02;font:bold 15px Helvetica,Arial;text-align:left}
+#mn .wa{background:#1faa59;color:#fff;border:0}#mn .gd{background:linear-gradient(135deg,#9a7218,#e7c766);border:0}
+#ts{position:fixed;left:10px;right:10px;bottom:calc(14px + env(safe-area-inset-bottom,0px));background:#2a1d02;color:#f0d27a;padding:12px;border-radius:10px;font:14px Helvetica,Arial;z-index:120;display:none}#ts a{color:#fff;font-weight:bold}
+#sr{position:fixed;inset:0;background:#000a;display:none;z-index:97}#sr>div{background:var(--page);border-bottom:3px solid var(--gold);padding:12px;padding-top:calc(12px + env(safe-area-inset-top,0px));max-height:85%;display:flex;flex-direction:column;font-family:Helvetica,Arial;box-sizing:border-box}
+#sr .rs{overflow:auto;margin-top:8px}#sr .rs button{display:flex;justify-content:space-between;gap:8px;width:100%;box-sizing:border-box;margin:5px 0;padding:11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:#2a1d02;font:14px Helvetica,Arial;text-align:left}#sr .rs b{color:var(--gd);white-space:nowrap}#sr .rs small{color:#777;display:block}
+.sum{margin-top:10px;border:1.5px solid var(--gold);border-radius:8px;background:#fbf1cf;padding:8px 10px;font-weight:bold;font-size:14px;color:var(--gd)}.sum div{display:flex;justify-content:space-between;padding:3px 0}.sum .bl{border-top:1px solid var(--gold);margin-top:3px;padding-top:6px;font-size:16px;color:#2a1d02}
+.pay{grid-template-columns:1fr 1fr 1fr}.att{grid-template-columns:26px 38px 38px 1fr 1fr 54px}
+.st{width:100%;height:34px;border:0;background:transparent;font:bold 17px Helvetica,Arial;color:#bbb}.st.on.p{background:#1faa59;color:#fff}.st.on.x{background:#d32f2f;color:#fff}
+.g select{border:0;border-radius:0;background:transparent;height:34px;padding:0 1px;font-size:13px;text-align:center}.g input[type=time]{font-size:12px;padding:0 2px}
+#md{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:110;padding:14px;box-sizing:border-box}
+#md>div{background:var(--page);border:2px solid var(--gold);border-radius:12px;padding:14px;width:100%;max-width:440px;max-height:90%;overflow:auto;font-family:Helvetica,Arial;color:var(--ink);box-sizing:border-box}
+#md h3{margin:0 0 6px;font:bold 17px Georgia;color:var(--gd)}
+#md button.o{display:block;width:100%;margin:7px 0;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:#2a1d02;font:bold 15px Helvetica,Arial;text-align:left}
+#md button.p{background:linear-gradient(135deg,#9a7218,#e7c766);border:0}
+.chips{display:flex;gap:8px;margin-bottom:6px}.chips button{flex:1;padding:14px 0;border:1.5px solid var(--gold);border-radius:10px;background:#fff;font:bold 17px Helvetica;color:#2a1d02}.chips button.on{background:var(--gold);color:#fff}
+#sr .rs .more{justify-content:center;background:#e9dcae;font-weight:bold}
+#cnt{font:11px Helvetica,Arial;color:var(--gl);text-align:center;background:#2a1d02;padding:3px}
+
+#au{position:fixed;inset:0;z-index:200;background:var(--bg);overflow-y:auto;padding:calc(24px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px));box-sizing:border-box;font-family:Helvetica,Arial,sans-serif}
+#au .ac{max-width:400px;margin:0 auto;background:var(--page);color:var(--ink);border:2px solid var(--gold);border-radius:14px;padding:22px 18px;box-shadow:0 8px 30px #0008}
+#au .ti{margin:0 0 2px;text-align:center;font:bold 24px Georgia,serif;letter-spacing:2px;color:var(--gd)}
+#au .su{margin:0 0 14px;text-align:center;font:italic 13px Georgia,serif;color:var(--gd)}
+#au h3{margin:6px 0 4px;font:bold 18px Georgia,serif;color:var(--gd)}
+#au .av{display:none}
+#au .ab{display:block;width:100%;margin-top:14px;padding:13px;border:0;border-radius:10px;background:linear-gradient(135deg,#9a7218,#e7c766);color:#2a1d02;font:bold 16px Helvetica,Arial}
+#au .ab:disabled{opacity:.55}
+#au .lk{background:none;border:0;padding:6px 0;color:var(--gd);font:bold 13px Helvetica,Arial;text-decoration:underline}
+#au .rw{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:8px;flex-wrap:wrap}
+#au .am{min-height:18px;margin-top:8px;font-size:13px;color:#b00020}#au .am.good{color:#1a7a43}
+#au .sp{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px;color:var(--gd)}#au .sp input{width:auto}
+#au .aw{background:#fde8e8;border:1px solid #d32f2f;color:#8a1414;border-radius:8px;padding:10px;font-size:13px;margin-bottom:10px;display:none}
+#au p{font-size:14px;margin:6px 0}
+#mn .dg{color:#b00020}
+#md .ck{display:flex;align-items:flex-start;gap:8px;margin:10px 0;font-size:13px;line-height:1.35}#md .ck input{width:auto;margin-top:2px}
+#md button.dn{background:#d32f2f;color:#fff;border:0}
+#md .em2{min-height:18px;font-size:13px;color:#b00020;margin-top:6px}
+</style></head><body>
+<div id="au"><div class="ac">
+<h1 class="ti">HAZRI BOOK</h1><p class="su">Attendance &amp; payment register</p>
+<div class="aw" id="aw"></div>
+
+<div class="av" id="vw"><p style="text-align:center">Checking sign-in…</p></div>
+
+<div class="av" id="vo"><h3>No internet</h3><p>Please connect to the internet once to log in.</p><button class="ab" id="vor" type="button">Try again</button></div>
+
+<div class="av" id="vs"><h3>Another account's data is on this phone</h3><p>This phone still holds Hazri Book data from a different account. To keep accounts separate, choose what to do.</p>
+<button class="ab" id="vsb" type="button">💾 Save a backup of the old data first</button>
+<button class="ab" id="vse" type="button" style="background:#d32f2f;color:#fff">Erase old data and continue</button>
+<button class="ab" id="vso" type="button" style="background:#e9dcae">Log out</button>
+<div class="am" id="vsm"></div></div>
+
+<form class="av" id="vl" novalidate><h3>Log in</h3>
+<label for="le">EMAIL</label><input id="le" type="email" autocomplete="username" inputmode="email" autocapitalize="off">
+<label for="lp">PASSWORD</label><input id="lp" type="password" autocomplete="current-password">
+<label class="sp"><input type="checkbox" data-show="lp"> Show password</label>
+<div class="am" id="lm"></div>
+<button class="ab" type="submit">Log in</button>
+<div class="rw"><button class="lk" type="button" data-go="vf">Forgot password?</button><button class="lk" type="button" data-go="vr">Create account</button></div></form>
+
+<form class="av" id="vr" novalidate><h3>Create account</h3>
+<label for="rn">YOUR NAME</label><input id="rn" type="text" autocomplete="name">
+<label for="re">EMAIL</label><input id="re" type="email" autocomplete="username" inputmode="email" autocapitalize="off">
+<label for="rp">PASSWORD (at least 6 characters)</label><input id="rp" type="password" autocomplete="new-password">
+<label for="rq">CONFIRM PASSWORD</label><input id="rq" type="password" autocomplete="new-password">
+<label class="sp"><input type="checkbox" data-show="rp,rq"> Show password</label>
+<div class="am" id="rm"></div>
+<button class="ab" type="submit">Create account</button>
+<div class="rw"><button class="lk" type="button" data-go="vl">I already have an account</button></div></form>
+
+<form class="av" id="vf" novalidate><h3>Reset password</h3><p>Enter your email. We will send you a link to choose a new password.</p>
+<label for="fe">EMAIL</label><input id="fe" type="email" autocomplete="username" inputmode="email" autocapitalize="off">
+<div class="am" id="fm"></div>
+<button class="ab" type="submit">Send reset link</button>
+<div class="rw"><button class="lk" type="button" data-go="vl">Back to log in</button></div></form>
+</div></div>
+<div id="bar"><h1>HAZRI BOOK</h1><button id="pv">‹</button><input id="go" type="number" min="1" inputmode="numeric"><span id="of" style="font:bold 13px Helvetica">/100</span><button id="nx">›</button><button id="sb" aria-label="Search">🔍</button><button id="mb" aria-label="Menu">☰</button></div>
+<div id="cnt"></div><div id="stage"></div><div id="md"><div></div></div><div id="mn"><div><h3>Hazri Book Menu</h3><small>Your writing saves automatically on this phone. Make a backup file to keep it safe.</small>
+<button class="gd" id="mad">➕ Add Sheets</button>
+<button class="gd" id="mbk">💾 Save Data (Backup file)</button>
+<label class="b">📂 Restore Data from Backup<input type="file" id="mrs" accept=".json,application/json" hidden></label>
+<button class="wa" id="mwa">💬 Send this sheet PDF on WhatsApp</button>
+<button id="mpd">📄 Download this sheet PDF</button>
+<button id="mwb">📤 Send Backup on WhatsApp</button>
+<small id="minfo"></small><small id="mlast"></small><small id="macc"></small><small id="msync"></small><button id="msy">🔄 Sync now (cloud)</button><button id="mlo">🚪 Log out</button><button id="mda" class="dg">🗑 Delete my account</button><button id="mcl">Close</button></div></div><div id="sr"><div><input id="sq" placeholder="Search name, ID, phone, shop, or sheet number" autocomplete="off"><div class="rs" id="srs"></div></div></div><div id="ts"></div><div id="pm"><div><b>Sign here with finger</b><canvas id="pc" width="500" height="200"></canvas><div class="bt"><button id="pcl">Clear</button><button id="pcn">Cancel</button><button id="psv" class="ok">Save</button></div></div></div>
+<script>
+const MAXN=100000,st=document.getElementById('stage');let N=100;
+const CC=['+974 Qatar','+92 Pakistan','+91 India','+880 Bangladesh','+977 Nepal','+94 Sri Lanka','+63 Philippines','+20 Egypt','+966 Saudi Arabia','+971 UAE','+965 Kuwait','+973 Bahrain','+968 Oman','+962 Jordan','+44 UK','+1 USA/Canada'];
+const F=[['name','Name'],['father',"Father's Name"],['id','ID No. (Qatar ID / Iqama / National ID)'],['phone','Phone'],['addr','Address'],['shop','Office / Shop'],['sphone','Office Phone'],['saddr','Office Address']];
+let cur=0,P={};
+const ld=i=>{try{return JSON.parse(localStorage.getItem('hb_'+i)||'{}')}catch(e){return {}}};
+let fw=0;const sv=(i,v)=>{try{localStorage.setItem('hb_'+i,JSON.stringify(v))}catch(e){if(Date.now()-fw>8000){fw=Date.now();toast('Phone storage is FULL - this change was NOT saved. Save a backup now (menu), then free space.')}}};
+try{N=Math.max(100,Math.min(MAXN,+localStorage.getItem('hb_count')||100));cur=Math.min(N-1,+localStorage.getItem('hb_cur')||0)}catch(e){}
+/*T-start*/
+const DEFK=['cc','cc2','rt','cur'];
+function hasData(v){for(const k in v){if(DEFK.includes(k))continue;if(String(v[k]==null?'':v[k]).trim()!=='')return true}return false}
+function hasRaw(r){try{return hasData(JSON.parse(r||'{}'))}catch(e){return false}}
+function keyIdx(){const a=[];try{for(let k=0;k<localStorage.length;k++){const m=/^hb_(\d+)$/.exec(localStorage.key(k));if(m)a.push(+m[1])}}catch(e){}return a.sort((x,y)=>x-y)}
+function addSheetsCore(n){n=Math.floor(+n);if(!(n>=1))return{error:'Enter a number of 1 or more.'};
+ if(N+n>MAXN)return{error:'The book can hold up to '+MAXN.toLocaleString()+' sheets. You have '+N+'.'};
+ const from=N+1;N+=n;try{localStorage.setItem('hb_count',String(N))}catch(e){N-=n;return{error:'Phone storage is full. Save a backup first.'}}
+ return{from,to:N}}
+function mergeBackup(j,mode){const d=j.data||{},r={added:0,kept:0,replaced:0,error:''};let max=0;
+ try{for(const k of Object.keys(d)){const m=/^hb_(\d+)$/.exec(k);if(!m)continue;const i=+m[1];if(i>=MAXN||!hasRaw(d[k]))continue;max=Math.max(max,i+1);
+  const had=hasData(ld(i));if(had&&mode!=='replace'){r.kept++;continue}localStorage.setItem(k,d[k]);if(had)r.replaced++;else r.added++}
+  N=Math.max(N,Math.min(MAXN,+j.count||0),max);localStorage.setItem('hb_count',String(N))}
+ catch(e){r.error='Phone storage became full while restoring. Part of the backup was restored.'}return r}
+/*T-end*/
+
+try{N=Math.max(N,Math.min(MAXN,(keyIdx().pop()||0)+1));cur=Math.min(N-1,cur)}catch(e){}
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+function mk(i){
+ const v=ld(i),d=document.createElement('div');d.className='page';d.style.zIndex=N-i;
+ const HO=Array.from({length:32},(_,n)=>`<option>${(n+1)/2}</option>`).join('');
+ const SG=k=>`<button class="sg" data-s="${k}">${(v[k]||'').startsWith('data:')?`<img src="${v[k]}">`:(esc(v[k])||'✍')}</button>`;
+ const I=(k,ph,x)=>`<input data-k="${k}" value="${esc(v[k])}" placeholder="${ph||''}" ${x||''}>`;
+ let h=`<div class="pn">— Sheet ${i+1} of ${N} —</div><h2>EMPLOYEE DETAILS</h2>`;
+ F.forEach(f=>{if(f[0]=='phone')h+=`<label>PHONE</label><div class="ph"><select data-k="cc">${CC.map(c=>`<option ${((v.cc||CC[0])==c)?'selected':''}>${c}</option>`).join('')}</select>${I('phone','Number','inputmode="tel"')}</div>`;
+  else if(f[0]=='sphone')h+=`<label>OFFICE PHONE</label><div class="ph"><select data-k="cc2">${CC.map(c=>`<option ${((v.cc2||CC[0])==c)?'selected':''}>${c}</option>`).join('')}</select>${I('sphone','Number','inputmode="tel"')}</div>`;
+  else h+=`<label>${f[1].toUpperCase()}</label>${I(f[0],'',f[0]=='id'?'inputmode="numeric"':'')}`});
+ h+=`<label>WAGE RATE (how much for each day / hour)</label><div class="ph">${I('rate','Amount','inputmode="decimal"')}<select data-k="rt">${['Per day','Per hour'].map(c=>`<option ${((v.rt||'Per day')==c)?'selected':''}>${c}</option>`).join('')}</select></div>`;
+ h+=`<label>MANAGER SIGNATURE (tap to sign)</label><div class="big">${SG('msign')}</div>`;
+ h+=`<h2>PAYMENTS <input data-k="cur" value="${esc(v.cur||'QAR')}" aria-label="Currency"></h2><div class="g pay"><div class="t">DATE</div><div class="t">AMOUNT</div><div class="t">SIGNATURE</div>`;
+ for(let r=0;r<12;r++)h+=`<div>${I('pd'+r,'dd/mm')}</div><div>${I('pa'+r,'0','inputmode="decimal"')}</div><div>${SG('ps'+r)}</div>`;
+ h+=`</div><div class="tot"><span>Total paid: <b id="tp${i}">0</b></span></div>`;
+ h+=`<h2>ATTENDANCE <input data-k="mon" value="${esc(v.mon)}" placeholder="Month" style="width:110px"></h2><div class="g att"><div class="t">DAY</div><div class="t">P ✓</div><div class="t">ABSENT ✗</div><div class="t">START</div><div class="t">END</div><div class="t">HOURS</div>`;
+ for(let r=1;r<=31;r++){const z=v['a'+r+'_s'];h+=`<div class="d">${r}</div><div><button class="st p ${z=='P'?'on':''}" data-st="${r}:P">✓</button></div><div><button class="st x ${z=='A'?'on':''}" data-st="${r}:A">✗</button></div><div><input type="time" data-k="a${r}_t0" value="${esc(v['a'+r+'_t0'])}"></div><div><input type="time" data-k="a${r}_t1" value="${esc(v['a'+r+'_t1'])}"></div><div><select data-k="a${r}_h"><option value="">–</option>${HO}</select></div>`}
+ h+=`</div><div class="tot"><span>Present: <b id="pp${i}">0</b></span><span>Absent: <b id="ab${i}">0</b></span><span>Hours: <b id="hr${i}">0</b></span></div><div class="sum"><div><span>Earned (<span id="rm${i}"></span>)</span><span id="ea${i}">0</span></div><div><span>Paid</span><span id="pd${i}">0</span></div><div class="bl"><span>Balance to pay</span><span id="bl${i}">0</span></div></div><p class="pn">Tap ✓ = present, ✗ = absent. Set start/end time or pick hours.</p>`;
+ d.innerHTML=h;d.querySelectorAll('select[data-k$="_h"]').forEach(q=>q.value=v[q.dataset.k]||'');tots(d,i,v);
+ d.addEventListener('click',e=>{const sb=e.target.closest('.sg');if(sb){openPad(i,sb.dataset.s,sb);return}
+ const tb=e.target.closest('.st');if(tb){const[r,z]=tb.dataset.st.split(':'),v=ld(i),k='a'+r+'_s';v[k]=v[k]==z?'':z;sv(i,v);d.querySelectorAll(`[data-st^="${r}:"]`).forEach(q=>q.classList.toggle('on',q.dataset.st.split(':')[1]==v[k]));tots(d,i,v)}});
+ d.addEventListener('input',e=>{const k=e.target.dataset.k;if(!k)return;const v=ld(i);v[k]=e.target.value;const m=k.match(/^a(\d+)_t[01]$/);
+  if(m){const a=v['a'+m[1]+'_t0'],b=v['a'+m[1]+'_t1'];if(a&&b){const t=x=>+x.slice(0,2)*60+ +x.slice(3,5);let h=(t(b)-t(a)+1440)%1440/60;h=Math.min(16,Math.max(.5,Math.round(h*2)/2));v['a'+m[1]+'_h']=String(h);const q=d.querySelector(`[data-k="a${m[1]}_h"]`);if(q)q.value=String(h)}}
+  sv(i,v);tots(d,i,v)});
+ st.appendChild(d);return d}
+let pk=null,pc=document.getElementById('pc'),cx=pc.getContext('2d'),pd=false,ink=false;
+cx.lineWidth=4;cx.lineCap=cx.lineJoin='round';cx.strokeStyle='#14206b';
+function pp(e){const r=pc.getBoundingClientRect();return[(e.clientX-r.left)*pc.width/r.width,(e.clientY-r.top)*pc.height/r.height]}
+pc.onpointerdown=e=>{pd=true;ink=true;pc.setPointerCapture(e.pointerId);const[x,y]=pp(e);cx.beginPath();cx.moveTo(x,y);cx.lineTo(x+.1,y+.1);cx.stroke()};
+pc.onpointermove=e=>{if(!pd)return;const[x,y]=pp(e);cx.lineTo(x,y);cx.stroke()};
+pc.onpointerup=pc.onpointercancel=()=>{pd=false};
+function openPad(i,k,btn){pk={i,k,btn};cx.clearRect(0,0,pc.width,pc.height);ink=false;document.getElementById('pm').style.display='flex'}
+document.getElementById('pcl').onclick=()=>{cx.clearRect(0,0,pc.width,pc.height);ink=false};
+document.getElementById('pcn').onclick=()=>{document.getElementById('pm').style.display='none'};
+document.getElementById('psv').onclick=()=>{if(!pk)return;const v=ld(pk.i);v[pk.k]=ink?pc.toDataURL('image/png'):'';sv(pk.i,v);
+ pk.btn.innerHTML=v[pk.k]?`<img src="${v[pk.k]}">`:'✍';document.getElementById('pm').style.display='none'};
+function tots(d,i,v){let p=0,pr=0,ab=0,hr=0;for(let r=0;r<12;r++)p+=parseFloat(v['pa'+r])||0;for(let r=1;r<=31;r++){const z=v['a'+r+'_s'];if(z=='P')pr++;if(z=='A')ab++;hr+=parseFloat(v['a'+r+'_h'])||0}
+ const R=n=>Math.round(n*100)/100,e=R((parseFloat(v.rate)||0)*(v.rt=='Per hour'?hr:pr)),q=s=>d.querySelector(s+i);
+ q('#tp').textContent=R(p);q('#pp').textContent=pr;q('#ab').textContent=ab;q('#hr').textContent=hr;q('#ea').textContent=e;q('#pd').textContent=R(p);q('#bl').textContent=R(e-p);q('#rm').textContent=v.cur||'QAR'}
+function render(){for(let i=Math.max(0,cur-1);i<=Math.min(N-1,cur+1);i++)if(!P[i])P[i]=mk(i);
+ for(const k in P){if(k<cur-1||k>cur+1){P[k].remove();delete P[k];continue}const p=P[k];p.style.transition='';p.style.transform='';p.style.opacity='';p.classList.toggle('gone',+k<cur)}
+ document.getElementById('go').value=cur+1;document.getElementById('of').textContent='/'+N;try{bar()}catch(e){}try{localStorage.setItem('hb_cur',cur)}catch(e){}}
+const go=n=>{cur=Math.max(0,Math.min(N-1,n));render()};
+let x0=null,y0=0,dx=0,drag=false,id=0;
+st.addEventListener('pointerdown',e=>{x0=e.clientX;y0=e.clientY;dx=0;drag=false;id=e.pointerId});
+st.addEventListener('pointermove',e=>{if(x0===null)return;dx=e.clientX-x0;
+ if(!drag&&Math.abs(dx)>16&&Math.abs(dx)>Math.abs(e.clientY-y0)*1.6){drag=true;document.activeElement.blur();st.setPointerCapture(id)}
+ if(!drag)return;const pr=Math.min(1,Math.abs(dx)/(st.clientWidth*.7));const p=dx<0?P[cur]:P[cur-1];if(!p)return;
+ p.style.transition='none';p.classList.remove('gone');p.style.opacity=1;p.style.transform=`rotateY(${dx<0?-100*pr:-100*(1-pr)}deg)`});
+const end=()=>{if(x0===null)return;x0=null;if(!drag)return;drag=false;const pr=Math.abs(dx)/(st.clientWidth*.7);
+ if(pr>.2&&dx<0&&cur<N-1)cur++;else if(pr>.2&&dx>0&&cur>0)cur--;render()};
+st.addEventListener('pointerup',end);st.addEventListener('pointercancel',end);
+document.getElementById('nx').onclick=()=>go(cur+1);document.getElementById('pv').onclick=()=>go(cur-1);
+document.getElementById('go').onchange=e=>go((+e.target.value||1)-1);
+function makePdf(i){
+ const v=ld(i),d=new jspdf.jsPDF({unit:'mm',format:'a4'}),G=[184,137,43];
+ const T=(t,x,y,s,b,al)=>{d.setFontSize(s);d.setFont('helvetica',b?'bold':'normal');d.text(String(t==null?'':t),x,y,{align:al||'left'})};
+ const tbl=(y,w,rh,head,rows)=>{let x=10;d.setLineWidth(.25);d.setDrawColor(...G);d.setFillColor(...G);d.rect(10,y,w.reduce((a,b)=>a+b),rh,'F');d.setTextColor(255,255,255);
+  head.forEach((h,j)=>{T(h,x+w[j]/2,y+rh/2+1.3,8,1,'center');x+=w[j]});d.setTextColor(40,30,5);
+  rows.forEach((r,k)=>{x=10;const yy=y+rh*(k+1);r.forEach((c,j)=>{d.rect(x,yy,w[j],rh);if(String(c).startsWith('data:image')){const h=rh-1,ww=Math.min(w[j]-2,h*2.5);d.addImage(c,'PNG',x+(w[j]-ww)/2,yy+.5,ww,h)}else T(c,x+w[j]/2,yy+rh/2+1.3,8.5,0,'center');x+=w[j]})});};
+ d.setTextColor(...G);T('HAZRI BOOK',105,16,22,1,'center');T('Attendance Card - Sheet '+(i+1),105,22,9,0,'center');d.setDrawColor(...G);d.line(10,25,200,25);
+ let y=33;const L=(a,b)=>{d.setTextColor(122,90,20);T(a,10,y,8,1);d.setTextColor(30,30,30);T(b,10,y+5,11,0);d.setDrawColor(217,189,107);d.line(10,y+6.5,200,y+6.5);y+=12.5};
+ L('NAME',v.name);L("FATHER'S NAME",v.father);L('ID NO.',v.id);L('PHONE',(v.cc||CC[0]).split(' ')[0]+' '+(v.phone||''));L('ADDRESS',v.addr);L('OFFICE / SHOP',v.shop);L('OFFICE PHONE',(v.cc2||CC[0]).split(' ')[0]+' '+(v.sphone||''));L('OFFICE ADDRESS',v.saddr);L('WAGE RATE',(v.rate||'')+' '+(v.cur||'QAR')+' '+(v.rt||'Per day'));
+ d.setTextColor(...G);T('PAYMENTS ('+(v.cur||'QAR')+')',10,y+6,11,1);
+ const pr=[];let tp=0;for(let r=0;r<12;r++){pr.push([v['pd'+r],v['pa'+r],v['ps'+r]]);tp+=parseFloat(v['pa'+r])||0}
+ tbl(y+9,[40,50,100],7.5,['DATE','AMOUNT','SIGNATURE'],pr);d.setTextColor(40,30,5);T('Total paid: '+tp,10,y+9+7.5*13+6,10,1);
+ T('Manager signature:',130,y+9+7.5*13+6,10,0);if((v.msign||'').startsWith('data:image'))d.addImage(v.msign,'PNG',162,y+9+7.5*13-3,36,14.4);
+ d.addPage();d.setTextColor(...G);T('ATTENDANCE - '+(v.mon||''),10,16,13,1);T((v.name||''),200,16,10,0,'right');
+ const ar=[];let np=0,ab=0,hr=0;for(let r=1;r<=31;r++){const z=v['a'+r+'_s'];if(z=='P')np++;if(z=='A')ab++;hr+=parseFloat(v['a'+r+'_h'])||0;ar.push([r,z=='P'?'P':z=='A'?'X':'',v['a'+r+'_t0'],v['a'+r+'_t1'],v['a'+r+'_h']])}
+ tbl(20,[20,30,45,45,50],7.6,['DAY','P / X','START','END','HOURS'],ar);
+ d.setTextColor(40,30,5);T('Present: '+np+'     Absent: '+ab+'     Total hours: '+hr,10,20+7.6*32+8,10,1);
+ const ern=(parseFloat(v.rate)||0)*(v.rt=='Per hour'?hr:np);T('Earned: '+Math.round(ern*100)/100+'     Paid: '+Math.round(tp*100)/100+'     Balance: '+Math.round((ern-tp)*100)/100+' '+(v.cur||'QAR'),10,20+7.6*32+14,10,1);
+ return d.output('blob')}
+const $=id=>document.getElementById(id);let tt;
+function toast(h){const t=$('ts');t.innerHTML=h;t.style.display='block';clearTimeout(tt);tt=setTimeout(()=>t.style.display='none',9000)}
+async function outFile(blob,nm,type,shareFirst){
+ if(shareFirst){try{const f=new File([blob],nm,{type});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:nm});return 'shared'}}catch(e){if(e&&e.name=='AbortError')return 'x'}}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nm;a.click();return 'saved'}
+const WA='<a href="https://wa.me/" target="_blank" rel="noopener">Open WhatsApp</a>';
+function pdfOf(){const v=ld(cur);try{return{b:makePdf(cur),n:'Hazri_'+((v.name||('Sheet'+(cur+1))).replace(/[^A-Za-z0-9]+/g,'_'))+'.pdf'}}catch(e){toast('PDF could not be created (internet needed once).');return null}}
+function bk(){const o={};try{for(let k=0;k<localStorage.length;k++){const n=localStorage.key(k);if(n.startsWith('hb_'))o[n]=localStorage.getItem(n)}}catch(e){}
+ const d=new Date().toISOString().slice(0,10);return{b:new Blob([JSON.stringify({app:'hazribook',v:1,date:d,count:N,data:o})],{type:'application/json'}),n:'HazriBook_Backup_'+d+'.json'}}
+const lastB=()=>{try{const x=localStorage.getItem('hbm_last');$('mlast').textContent=x?'Last backup: '+x:'No backup made yet.'}catch(e){}};
+const shut=()=>$('mn').style.display='none';
+$('mb').onclick=()=>{lastB();infoMenu();$('mn').style.display='flex'};$('mcl').onclick=shut;$('mn').onclick=e=>{if(e.target.id=='mn')shut()};
+$('mbk').onclick=async()=>{const f=bk(),r=await outFile(f.b,f.n,'application/json',false);if(r=='saved'){try{localStorage.setItem('hbm_last',f.n.slice(-15,-5))}catch(e){}shut();toast('Backup file saved: '+f.n)}};
+$('mwb').onclick=async()=>{const f=bk(),r=await outFile(f.b,f.n,'application/json',true);shut();if(r=='saved')toast('Backup saved. '+WA+' and attach the file.')};
+$('mpd').onclick=async()=>{const p=pdfOf();if(!p)return;const r=await outFile(p.b,p.n,'application/pdf',false);shut();if(r=='saved')toast('PDF saved: '+p.n)};
+$('mwa').onclick=async()=>{const p=pdfOf();if(!p)return;const r=await outFile(p.b,p.n,'application/pdf',true);shut();if(r=='saved')toast('PDF saved. '+WA+' and attach the PDF.')};
+
+$('sb').onclick=()=>{$('sr').style.display='block';$('sq').value='';srch();$('sq').focus()};$('sr').onclick=e=>{if(e.target.id=='sr')$('sr').style.display='none'};
+addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;if(e.key==='ArrowLeft')go(cur+1);if(e.key==='ArrowRight')go(cur-1)});
+/* ===== Unlimited sheets, paged search, safe restore ===== */
+const mdEl=$('md'),mdBox=mdEl.firstChild,mdClose=()=>{mdEl.style.display='none'};
+function md(h){mdBox.innerHTML=h;mdEl.style.display='flex';return mdBox}
+mdEl.onclick=e=>{if(e.target===mdEl)mdClose()};
+function usage(){let c=0;try{for(let k=0;k<localStorage.length;k++){const n=localStorage.key(k);if(n.startsWith('hb_'))c+=n.length+(localStorage.getItem(n)||'').length}}catch(e){}return c}
+function bar(){const p=Math.round(usage()/5e6*100),el=$('cnt');el.textContent='Sheets: '+N.toLocaleString()+'  •  Phone storage used ≈ '+p+'%';el.style.color=p>=80?'#ff9c9c':''}
+function openAdd(){
+ const b=md('<h3>Add Sheets</h3><p style="font-size:14px;margin:4px 0 10px">How many employee sheets do you want to add? You have <b>'+N.toLocaleString()+'</b> now.</p><div class="chips">'+[1,10,50,100].map(n=>'<button data-n="'+n+'">'+n+'</button>').join('')+'</div><label>OR TYPE ANY NUMBER</label><input id="adn" type="number" min="1" inputmode="numeric" placeholder="e.g. 25"><button class="o p" id="adg" style="margin-top:10px">Add sheets</button><button class="o" id="adc">Cancel</button><div id="ade" style="color:#b00020;font-size:13px"></div><p style="font-size:12px;color:#7a6a3a">New sheets get the next numbers. Existing employees are never changed. Up to '+MAXN.toLocaleString()+' sheets in total.</p>');
+ b.querySelectorAll('.chips button').forEach(c=>c.onclick=()=>{b.querySelector('#adn').value=c.dataset.n;b.querySelectorAll('.chips button').forEach(x=>x.classList.toggle('on',x===c))});
+ b.querySelector('#adc').onclick=mdClose;
+ b.querySelector('#adg').onclick=()=>{const r=addSheetsCore(b.querySelector('#adn').value);if(r.error){b.querySelector('#ade').textContent=r.error;return}
+  mdClose();render();go(r.from-1);bar();toast('Added '+(r.from==r.to?'sheet '+r.from:(r.to-r.from+1)+' sheets: '+r.from+' to '+r.to)+'.')}}
+$('mad').onclick=()=>{shut();openAdd()};
+function infoMenu(){let f=0;keyIdx().forEach(i=>{if(hasData(ld(i)))f++});$('minfo').textContent='Sheets: '+N.toLocaleString()+'  •  With data: '+f.toLocaleString()+'  •  Storage ≈ '+Math.round(usage()/5e6*100)+'% of about 5 MB'}
+let srList=[],srShown=0;
+function srch(more){const q=$('sq').value.trim().toLowerCase(),R=$('srs');
+ if(!more){R.innerHTML='';srShown=0;srList=[];
+  if(/^\d+$/.test(q)&&+q>=1&&+q<=N)srList.push({i:+q-1,t:'Go to sheet '+q,s:''});
+  keyIdx().forEach(i=>{const v=ld(i);if(!hasData(v))return;const t=[v.name,v.father,v.id,v.phone,v.shop].join(' ').toLowerCase();if(q&&!t.includes(q))return;
+   srList.push({i,t:v.name||v.father||'(no name)',s:[v.id,v.cc?(v.cc.split(' ')[0]+' '+(v.phone||'')):v.phone,v.shop].filter(Boolean).join(' • ')})})}
+ const old=R.querySelector('.more');if(old)old.remove();
+ srList.slice(srShown,srShown+50).forEach(x=>{const b=document.createElement('button');b.innerHTML='<span></span><b></b>';b.firstChild.textContent=x.t;const sm=document.createElement('small');sm.textContent=x.s;b.firstChild.appendChild(sm);b.lastChild.textContent='Sheet '+(x.i+1);b.onclick=()=>{$('sr').style.display='none';go(x.i)};R.appendChild(b)});
+ srShown+=50;
+ if(srShown<srList.length){const m=document.createElement('button');m.className='more';m.textContent='Load more ('+(srList.length-srShown)+' left)';m.onclick=()=>srch(true);R.appendChild(m)}
+ if(!srList.length)R.innerHTML='<p style="color:#777;font-size:14px">No sheet found. Type a name, ID, phone, shop or a sheet number.</p>'}
+$('sq').oninput=()=>srch(false);
+$('mrs').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const R=new FileReader();
+ R.onload=()=>{let j;try{j=JSON.parse(R.result);if(j.app!='hazribook')throw 0}catch(x){toast('This is not a valid Hazri Book backup file.');return}
+  if(j.v!==1||!j.data){toast('This backup was made by the cloud version. Restore it in the cloud app.');return}
+  shut();const n=Object.keys(j.data).filter(k=>/^hb_\d+$/.test(k)&&hasRaw(j.data[k])).length;
+  const b=md('<h3>Restore backup</h3><p style="font-size:14px">This backup'+(j.date?' (from '+j.date+')':'')+' has <b>'+n+'</b> sheet(s) with data. Nothing is deleted. Tip: save a backup of your current data first.</p><button class="o p" id="rk">Add only missing sheets (keep my current sheets) - recommended</button><button class="o" id="rr">Replace my sheets with the backup version where both have data</button><button class="o" id="rc">Cancel</button>');
+  const run=mode=>{mdClose();const r=mergeBackup(j,mode);for(const k in P){P[k].remove();delete P[k]}cur=Math.min(N-1,cur);render();bar();
+   toast(r.error||('Restored: '+r.added+' added'+(r.replaced?', '+r.replaced+' replaced':'')+(r.kept?', '+r.kept+' kept as they were':'')+'.'))};
+  b.querySelector('#rk').onclick=()=>run('keep');
+  b.querySelector('#rr').onclick=()=>{if(confirm('Replace your sheets with the backup version where both have data?'))run('replace')};
+  b.querySelector('#rc').onclick=mdClose};
+ R.readAsText(f)};
+
+render();
+</script><script>
+/* ===== Firebase: login / register / reset password / delete account + cloud sync (Firestore) ===== */
+(function(){
+const FIREBASE_CONFIG={
+ apiKey:"AIzaSyD7dt3O1ApbBeVAWeMySvEp34ya1I_wTZY",
+ authDomain:"hazribook-2afe0.firebaseapp.com",
+ projectId:"hazribook-2afe0",
+ storageBucket:"hazribook-2afe0.firebasestorage.app",
+ messagingSenderId:"995397160148",
+ appId:"1:995397160148:web:11e1f87a890fa7c8e2bf41"
+};
+const q=id=>document.getElementById(id),gate=q('au'),views=['vw','vo','vl','vr','vf','vs'];
+const configured=!/PASTE/.test(FIREBASE_CONFIG.apiKey+FIREBASE_CONFIG.projectId+FIREBASE_CONFIG.appId);
+const ERR={
+ 'auth/invalid-email':'This email address is not valid.',
+ 'auth/missing-email':'Please enter your email.',
+ 'auth/missing-password':'Please enter your password.',
+ 'auth/user-not-found':'Email or password is wrong.',
+ 'auth/wrong-password':'Email or password is wrong.',
+ 'auth/invalid-credential':'Email or password is wrong.',
+ 'auth/invalid-login-credentials':'Email or password is wrong.',
+ 'auth/email-already-in-use':'An account with this email already exists. Please log in.',
+ 'auth/weak-password':'Password is too weak. Use at least 6 characters.',
+ 'auth/too-many-requests':'Too many attempts. Please wait a few minutes and try again.',
+ 'auth/network-request-failed':'No internet connection. Please try again.',
+ 'auth/user-disabled':'This account has been disabled.',
+ 'auth/requires-recent-login':'For safety, please log out, log in again, and then try this.',
+ 'auth/operation-not-allowed':'Email/Password login is not turned on in Firebase yet.',
+ 'auth/operation-not-supported-in-this-environment':'Login needs this page to be opened from an https:// web link, not as a saved file.',
+ 'auth/unauthorized-domain':'This website address is not allowed in Firebase (Authentication > Settings > Authorized domains).'
+};
+const em=e=>ERR[e&&e.code]||('Something went wrong ('+((e&&e.code)||'unknown')+'). Please try again.');
+function show(v){views.forEach(x=>q(x).style.display=x===v?'block':'none');gate.style.display='block';gate.scrollTop=0;
+ gate.querySelectorAll('.am').forEach(m=>{m.textContent='';m.className='am'})}
+function msg(id,t,good){const m=q(id);m.textContent=t;m.className='am'+(good?' good':'')}
+function busy_(f,on){const b=f.querySelector('.ab');if(b)b.disabled=on}
+const setUser=e=>{try{e?localStorage.setItem('hbm_user',e):localStorage.removeItem('hbm_user')}catch(x){}};
+const known=()=>{try{return localStorage.getItem('hbm_user')||''}catch(x){return ''}};
+
+gate.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{show(b.dataset.go)});
+gate.querySelectorAll('[data-show]').forEach(c=>c.onchange=()=>c.dataset.show.split(',').forEach(i=>q(i).type=c.checked?'text':'password'));
+q('vor').onclick=()=>location.reload();
+function warn(t){const w=q('aw');w.textContent=t;w.style.display='block'}
+
+/* Offline fallback: SDK could not load */
+if(typeof firebase==='undefined'){
+ if(known()){gate.style.display='none';q('macc').textContent='Offline - signed in as '+known();
+  q('mlo').onclick=()=>toast('Connect to the internet to log out.');q('mda').onclick=()=>toast('Connect to the internet to delete your account.');q('msy').onclick=()=>toast('No cloud connection right now.');return}
+ show('vo');return}
+
+if(!configured){show('vl');warn('Firebase is not set up yet. Open this file in a text editor and paste your Firebase config in FIREBASE_CONFIG (near the bottom of the file).');
+ gate.querySelectorAll('.ab').forEach(b=>b.disabled=true);return}
+
+let auth,db=null;
+try{firebase.initializeApp(FIREBASE_CONFIG);auth=firebase.auth()}catch(e){show('vl');warn('Firebase could not start: '+(e.message||e));return}
+try{if(firebase.firestore){db=firebase.firestore();try{db.settings({experimentalAutoDetectLongPolling:true,merge:true})}catch(e){}}}catch(e){db=null}
+if(!/^https?:$/.test(location.protocol)){
+ q('vo').innerHTML='<h3>Open from a web link</h3><p>Login does not work when this file is opened directly from your phone (Downloads or Files). Please put the file on a website such as GitHub Pages or Firebase Hosting and open its https:// link.</p>';
+ show('vo');return}
+show('vw');
+let authFired=false;
+setTimeout(()=>{if(!authFired&&q('vw').style.display==='block'){show('vl');warn('Could not reach the login service. Check your internet and try again.')}},12000);
+
+/* ================= Cloud sync engine =================
+   Local phone storage stays the working copy (app keeps working offline).
+   Every change is queued, then uploaded to Firestore at users/{uid}/sheets/{n}.
+   On login the cloud copy is pulled and merged: the newer edit of each sheet wins. */
+const _set=Storage.prototype.setItem;
+let user=null,ready=false,busy=false,deleting=false,applying=false,timer=null,lastErr='',warned=false;
+let TS={},DIRTY=new Set(),VER={},ps=null;
+const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}}};
+function loadState(){try{TS=JSON.parse(ls.get('hbm_ts')||'{}')}catch(e){TS={}}
+ try{DIRTY=new Set(JSON.parse(ls.get('hbm_dirty')||'[]'))}catch(e){DIRTY=new Set()}}
+function persist(){clearTimeout(ps);try{_set.call(localStorage,'hbm_ts',JSON.stringify(TS));_set.call(localStorage,'hbm_dirty',JSON.stringify([...DIRTY]))}catch(e){}}
+const persistSoon=()=>{clearTimeout(ps);ps=setTimeout(persist,300)};
+const udoc=()=>db.collection('users').doc(user.uid),sheets=()=>udoc().collection('sheets'),sheet=i=>sheets().doc(String(i)),meta=()=>udoc().collection('meta').doc('main');
+const TO=(p,ms)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r({code:'timeout'}),ms))]);
+function fe(e){const c=(e&&e.code)||'';
+ if(c==='permission-denied')return 'cloud database not ready (create Firestore and publish the rules)';
+ if(c==='timeout'||c==='unavailable')return 'no connection to the cloud';
+ if(c==='resource-exhausted')return 'free cloud limit reached for today';
+ return 'cloud error '+c}
+function stText(){if(!user)return '';if(!db)return '☁ Cloud off';if(!navigator.onLine)return DIRTY.size?'☁ Offline - '+DIRTY.size+' change(s) waiting':'☁ Offline';
+ if(lastErr)return '☁ Sync problem';if(busy)return '☁ Syncing…';if(DIRTY.size)return '☁ Waiting to sync';return '☁ Synced'}
+function refresh(){const el=q('msync');if(el)el.textContent=stText()+(lastErr?' - '+lastErr:'');try{bar()}catch(e){}}
+const _bar=window.bar;
+window.bar=function(){_bar();const el=document.getElementById('cnt'),t=stText();if(el&&t&&el.textContent.indexOf('☁')<0)el.textContent+='  •  '+t};
+function sched(){clearTimeout(timer);timer=setTimeout(()=>{flush()},3000);refresh()}
+
+Storage.prototype.setItem=function(k,v){_set.call(this,k,v);
+ if(this!==localStorage||applying||deleting||!user||!db)return;
+ const m=/^hb_(\d+)$/.exec(k);
+ if(m){const i=+m[1];TS[i]=Date.now();DIRTY.add(i);VER[i]=(VER[i]||0)+1;persistSoon();sched()}
+ else if(k==='hb_count'){DIRTY.add('c');VER.c=(VER.c||0)+1;persistSoon();sched()}
+};
+
+async function flush(){
+ if(!user||!db||busy||deleting||!DIRTY.size)return !DIRTY.size;
+ if(!navigator.onLine){refresh();return false}
+ busy=true;lastErr='';refresh();let ok=true;
+ try{
+  persist();
+  const items=[...DIRTY];
+  for(let a=0;a<items.length;a+=10){
+   const part=items.slice(a,a+10),b=db.batch(),seen={};
+   part.forEach(it=>{seen[it]=VER[it]||0;
+    if(it==='c'){b.set(meta(),{count:N,u:Date.now()},{merge:true});return}
+    const raw=ls.get('hb_'+it)||'{}';
+    if(raw.length>900000){if(!warned){warned=true;toast('Sheet '+(it+1)+' is too big to save to the cloud (too many large signatures).')}return}
+    b.set(sheet(it),{d:raw,u:TS[it]||Date.now()})});
+   await TO(b.commit(),25000);
+   part.forEach(it=>{if((VER[it]||0)===seen[it])DIRTY.delete(it)});persist();
+  }
+ }catch(e){ok=false;lastErr=fe(e)}
+ busy=false;refresh();
+ if(ok&&DIRTY.size)sched();
+ return ok&&!DIRTY.size}
+
+async function pull(){
+ const r=await TO(Promise.all([meta().get(),sheets().get()]),30000),ms=r[0],ss=r[1];
+ applying=true;let changed=false;
+ try{
+  const seen=new Set();let mx=0;
+  ss.forEach(d=>{const i=+d.id,x=d.data()||{};if(!(i>=0&&i<MAXN)||typeof x.d!=='string')return;
+   seen.add(i);mx=Math.max(mx,i+1);
+   const ru=+x.u||0,lu=TS[i]||0,raw=ls.get('hb_'+i),has=raw&&hasRaw(raw);
+   if(ru>lu||(!has&&!lu)){if(raw!==x.d){_set.call(localStorage,'hb_'+i,x.d);changed=true}TS[i]=ru;DIRTY.delete(i)}
+   else if(lu>ru){DIRTY.add(i);VER[i]=(VER[i]||0)+1}});
+  keyIdx().forEach(i=>{if(!seen.has(i)&&hasRaw(ls.get('hb_'+i))){if(!TS[i])TS[i]=Date.now();DIRTY.add(i);VER[i]=(VER[i]||0)+1}});
+  const rc=ms.exists?(+ms.data().count||0):0,nn=Math.max(N,Math.min(MAXN,rc),Math.min(MAXN,mx));
+  if(nn!==N){N=nn;_set.call(localStorage,'hb_count',String(N));changed=true}
+  if(N>rc){DIRTY.add('c');VER.c=(VER.c||0)+1}
+ }finally{applying=false}
+ persist();
+ if(changed){for(const k in P){P[k].remove();delete P[k]}cur=Math.min(N-1,cur);render()}
+}
+async function sync(){
+ if(!db){lastErr='cloud database is not available';refresh();return}
+ lastErr='';refresh();
+ try{if(navigator.onLine)await pull()}catch(e){lastErr=fe(e);refresh();return}
+ await flush();refresh()}
+
+addEventListener('online',()=>{if(user&&ready)sync()});addEventListener('offline',refresh);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')persist();else if(user&&ready&&navigator.onLine&&DIRTY.size)flush()});
+addEventListener('pagehide',persist);
+setInterval(()=>{if(user&&ready&&DIRTY.size)flush()},60000);
+q('msy').onclick=async()=>{toast('Syncing…');await sync();toast(lastErr?'Sync problem: '+lastErr:'Synced with the cloud ✔')};
+
+async function wipeCloud(){
+ for(;;){const s=await TO(sheets().limit(300).get(),30000);if(s.empty)break;const b=db.batch();s.docs.forEach(d=>b.delete(d.ref));await TO(b.commit(),30000)}
+ await TO(meta().delete(),20000)}
+function clearAllLocal(){try{const ks=[];for(let k=0;k<localStorage.length;k++){const n=localStorage.key(k);if(/^hbm?_/.test(n))ks.push(n)}ks.forEach(n=>localStorage.removeItem(n))}catch(x){}}
+
+/* ---- account switching on one phone ---- */
+function acc(u){q('macc').textContent='Signed in: '+(u.displayName?u.displayName+' • ':'')+(u.email||'')}
+function begin(u){
+ if(!ls.get('hbm_owner')){try{_set.call(localStorage,'hbm_owner',u.uid)}catch(e){}
+  keyIdx().forEach(i=>{if(hasRaw(ls.get('hb_'+i))){TS[i]=Date.now();DIRTY.add(i);VER[i]=(VER[i]||0)+1}});persist()}
+ gate.style.display='none';acc(u);ready=true;refresh();sync()}
+function start(u){
+ user=u;loadState();
+ const owner=ls.get('hbm_owner'),has=keyIdx().some(i=>hasRaw(ls.get('hb_'+i)));
+ if(owner&&owner!==u.uid&&(has||DIRTY.size)){show('vs');return}
+ if(owner&&owner!==u.uid){clearAllLocal();setUser(u.email||'user');location.reload();return}
+ begin(u)}
+q('vsb').onclick=()=>{$('mbk').click();msg('vsm','Backup file requested - check your Downloads.',true)};
+q('vse').onclick=()=>{if(!confirm('Erase all Hazri Book data stored on this phone and continue with the new account?'))return;clearAllLocal();setUser(user&&user.email||'user');location.reload()};
+q('vso').onclick=()=>{auth.signOut()};
+
+auth.onAuthStateChanged(u=>{
+ authFired=true;
+ if(u){setUser(u.email||'user');['lp','rp','rq','fe'].forEach(i=>q(i).value='');start(u)}
+ else{user=null;ready=false;clearTimeout(timer);setUser('');show('vl')}
+});
+
+q('vl').onsubmit=async e=>{e.preventDefault();const f=e.target;msg('lm','');
+ const em_=q('le').value.trim(),pw=q('lp').value;
+ if(!em_||!pw){msg('lm',!em_?ERR['auth/missing-email']:ERR['auth/missing-password']);return}
+ busy_(f,true);try{await auth.signInWithEmailAndPassword(em_,pw)}catch(x){msg('lm',em(x))}busy_(f,false)};
+
+q('vr').onsubmit=async e=>{e.preventDefault();const f=e.target;msg('rm','');
+ const n=q('rn').value.trim(),m=q('re').value.trim(),p=q('rp').value,c=q('rq').value;
+ if(!m){msg('rm',ERR['auth/missing-email']);return}
+ if(p.length<6){msg('rm',ERR['auth/weak-password']);return}
+ if(p!==c){msg('rm','The two passwords do not match.');return}
+ busy_(f,true);
+ try{const r=await auth.createUserWithEmailAndPassword(m,p);
+  if(n){try{await r.user.updateProfile({displayName:n});acc(auth.currentUser)}catch(x){}}}
+ catch(x){msg('rm',em(x))}busy_(f,false)};
+
+q('vf').onsubmit=async e=>{e.preventDefault();const f=e.target;msg('fm','');
+ const m=q('fe').value.trim();if(!m){msg('fm',ERR['auth/missing-email']);return}
+ busy_(f,true);
+ try{await auth.sendPasswordResetEmail(m);msg('fm','If an account exists for this email, a reset link has been sent. Check your Inbox and Spam folder.',true)}
+ catch(x){if(x&&x.code==='auth/user-not-found')msg('fm','If an account exists for this email, a reset link has been sent. Check your Inbox and Spam folder.',true);else msg('fm',em(x))}
+ busy_(f,false)};
+
+/* Log out (data stays on this phone and in the cloud) */
+q('mlo').onclick=async()=>{shut();
+ if(DIRTY.size&&navigator.onLine)await flush();
+ if(DIRTY.size&&!confirm('Some changes are not saved to the cloud yet. They stay on this phone and upload when you log in again with this account. Log out now?'))return;
+ try{persist();await auth.signOut()}catch(x){toast(em(x))}};
+
+/* Delete account (also deletes the cloud copy of your sheets) */
+q('mda').onclick=()=>{shut();
+ const u=auth.currentUser;if(!u)return;
+ const b=md('<h3>Delete my account</h3><p style="font-size:14px;margin:4px 0">This permanently deletes your login <b>'+(u.email||'').replace(/</g,'&lt;')+'</b> <b>and all your sheets saved in the cloud</b>. You will not be able to log in with it again. This cannot be undone.</p>'
+ +'<label>ENTER YOUR PASSWORD TO CONFIRM</label><input id="dpw" type="password" autocomplete="current-password">'
+ +'<label class="ck"><input type="checkbox" id="dwipe"><span>Also erase all Hazri Book sheets stored on this phone. (If not ticked, your sheets stay on this phone.)</span></label>'
+ +'<button class="o" id="dbk">💾 Save a backup file first</button>'
+ +'<div class="em2" id="dem"></div>'
+ +'<button class="o dn" id="ddl">Delete account permanently</button><button class="o" id="dcn">Cancel</button>');
+ b.querySelector('#dcn').onclick=mdClose;
+ b.querySelector('#dbk').onclick=()=>$('mbk').click();
+ b.querySelector('#ddl').onclick=async()=>{
+  const pw=b.querySelector('#dpw').value,err=b.querySelector('#dem'),wipe=b.querySelector('#dwipe').checked,btn=b.querySelector('#ddl');err.textContent='';
+  if(!pw){err.textContent=ERR['auth/missing-password'];return}
+  if(wipe&&!confirm('All sheets on this phone will be erased too. Are you sure?'))return;
+  btn.disabled=true;
+  try{const cu=auth.currentUser;
+   await cu.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(cu.email,pw));
+   deleting=true;
+   if(db){try{await wipeCloud()}catch(x){throw {code:x&&x.code==='permission-denied'?'cloud/not-ready':'cloud/failed'}}}
+   await cu.delete();
+   DIRTY.clear();TS={};
+   if(wipe){clearAllLocal();location.reload();return}
+   try{['hbm_owner','hbm_ts','hbm_dirty','hbm_user'].forEach(n=>localStorage.removeItem(n))}catch(x){}
+   deleting=false;mdClose();show('vl');msg('lm','Your account has been deleted.',true)}
+  catch(x){deleting=false;btn.disabled=false;const c=x&&x.code;
+   err.textContent=(c==='auth/wrong-password'||c==='auth/invalid-credential'||c==='auth/invalid-login-credentials')?'Wrong password.':
+    c==='cloud/failed'||c==='cloud/not-ready'?'Could not delete your cloud data, so the account was NOT deleted. Check your internet and try again.':em(x)}}
+};
+})();
+</script>
+</body></html>
