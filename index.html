@@ -1,14 +1,14 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Hazri Book (offline, unlimited sheets)</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#b8892b"><meta name="mobile-web-app-capable" content="yes"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <style>
-:root{--bg:#16120a;--page:#fffaf0;--ink:#3b2a06;--gold:#b8892b;--gl:#f0d27a;--gd:#7a5a14;--line:#d9bd6b;--in:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d0b06}}
-:root[data-theme="dark"]{--bg:#0d0b06}
-html,body{height:100%;margin:0}body{background:var(--bg);font-family:Georgia,'Times New Roman',serif;display:flex;flex-direction:column;overflow:hidden}
+:root{--bg:linear-gradient(160deg,#8a6516,#d9b04a 40%,#f0d27a 65%,#b8892b);--page:#fffaf0;--ink:#3b2a06;--gold:#b8892b;--gl:#f0d27a;--gd:#7a5a14;--line:#d9bd6b;--in:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:linear-gradient(160deg,#8a6516,#d9b04a 40%,#f0d27a 65%,#b8892b)}}
+:root[data-theme="dark"]{--bg:linear-gradient(160deg,#8a6516,#d9b04a 40%,#f0d27a 65%,#b8892b)}
+html{background:#b8892b}html,body{height:100%;margin:0}body{background:var(--bg);font-family:Georgia,'Times New Roman',serif;display:flex;flex-direction:column;overflow:hidden}
 #bar{display:flex;align-items:center;gap:6px;padding:7px 8px;background:linear-gradient(135deg,#8a6414,#e7c766 50%,#9a7218);color:#2a1d02;box-shadow:0 2px 10px #0008}
 #bar h1{margin:0;font-size:17px;letter-spacing:1.5px;flex:1;white-space:nowrap}
 #bar button{white-space:nowrap;background:#2a1d02;color:var(--gl);border:0;border-radius:8px;padding:6px 11px;font:bold 15px Helvetica,Arial}
@@ -58,6 +58,13 @@ input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 2px #e7c76688
 #cnt{font:11px Helvetica,Arial;color:var(--gl);text-align:center;background:#2a1d02;padding:3px}
 
 #au{position:fixed;inset:0;z-index:200;background:var(--bg);overflow-y:auto;padding:calc(24px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px));box-sizing:border-box;font-family:Helvetica,Arial,sans-serif}
+#au .hd{max-width:400px;margin:0 auto 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+#au .fl{width:46px;height:auto;flex:none;border:1px solid #5a4210;border-radius:3px;box-shadow:0 2px 6px #0005}
+#au .bs{flex:1;text-align:center;color:#2a1d02}
+#au .ar{font:bold 24px 'Noto Naskh Arabic','Amiri','Traditional Arabic','Geeza Pro',serif;line-height:1.5}
+#au .en{font:italic 12px Georgia,serif;margin-top:2px}
+#au .pw{height:6px;border-radius:3px;background:#e9dcae;margin-top:6px;overflow:hidden}#au .pw i{display:block;height:100%;width:0;background:#d32f2f;transition:width .2s,background .2s}
+#au .ph{min-height:16px;margin-top:3px;font-size:12px;color:var(--gd)}
 #au .ac{max-width:400px;margin:0 auto;background:var(--page);color:var(--ink);border:2px solid var(--gold);border-radius:14px;padding:22px 18px;box-shadow:0 8px 30px #0008}
 #au .ti{margin:0 0 2px;text-align:center;font:bold 24px Georgia,serif;letter-spacing:2px;color:var(--gd)}
 #au .su{margin:0 0 14px;text-align:center;font:italic 13px Georgia,serif;color:var(--gd)}
@@ -75,8 +82,9 @@ input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 2px #e7c76688
 #md .ck{display:flex;align-items:flex-start;gap:8px;margin:10px 0;font-size:13px;line-height:1.35}#md .ck input{width:auto;margin-top:2px}
 #md button.dn{background:#d32f2f;color:#fff;border:0}
 #md .em2{min-height:18px;font-size:13px;color:#b00020;margin-top:6px}
+#home{position:fixed;inset:0;z-index:90;background:var(--bg);overflow:auto;padding:24px 15px;color:var(--ink);font-family:Helvetica,Arial;box-sizing:border-box}#home .hc{max-width:520px;margin:auto;background:var(--page);border:2px solid var(--gold);border-radius:16px;padding:20px}#home h1{text-align:center;color:var(--gd);font-family:Georgia}#home button,.lockaction{display:block;width:100%;padding:14px;margin:10px 0;border:1px solid var(--line);border-radius:10px;background:linear-gradient(135deg,#9a7218,#e7c766);font-weight:bold;font-size:16px;color:#2a1d02}#home .saved{background:#fff;padding:12px;border:1px solid var(--line);border-radius:9px;margin:8px 0}#home .saved button{margin:5px 0}#home small{color:var(--gd)}.page.locked:after{content:'🔒 FINAL • VIEW ONLY';position:sticky;bottom:0;display:block;background:#2a1d02;color:#f0d27a;padding:10px;text-align:center;font-weight:bold}.page.locked input,.page.locked select,.page.locked .sg,.page.locked .st{pointer-events:none;opacity:.75}#home[hidden]{display:none!important}
 </style></head><body>
-<div id="au"><div class="ac">
+<div id="au"><div class="hd"><svg class="fl" viewBox="0 0 56 32" aria-label="Qatar"><rect width="56" height="32" fill="#8a1538"/><path d="M0,0H14L20,1.78L14,3.56L20,5.33L14,7.11L20,8.89L14,10.67L20,12.44L14,14.22L20,16.00L14,17.78L20,19.56L14,21.33L20,23.11L14,24.89L20,26.67L14,28.44L20,30.22L14,32.00L0,32Z" fill="#fff"/></svg><div class="bs"><div class="ar" lang="ar" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div><div class="en">In the name of Allah, the Most Gracious, the Most Merciful</div></div><svg class="fl" viewBox="0 0 56 32" aria-label="Pakistan"><rect width="56" height="32" fill="#01411c"/><rect width="14" height="32" fill="#fff"/><circle cx="35" cy="16" r="9" fill="#fff"/><circle cx="38.2" cy="14.3" r="7.6" fill="#01411c"/><polygon points="42.7,8.8 42.7,11.4 45.1,12.3 42.7,13.1 42.5,15.7 41.0,13.6 38.5,14.2 40.0,12.1 38.7,10.0 41.1,10.8" fill="#fff"/></svg></div><div class="ac">
 <h1 class="ti">HAZRI BOOK</h1><p class="su">Attendance &amp; payment register</p>
 <div class="aw" id="aw"></div>
 
@@ -101,8 +109,9 @@ input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 2px #e7c76688
 <form class="av" id="vr" novalidate><h3>Create account</h3>
 <label for="rn">YOUR NAME</label><input id="rn" type="text" autocomplete="name">
 <label for="re">EMAIL</label><input id="re" type="email" autocomplete="username" inputmode="email" autocapitalize="off">
-<label for="rp">PASSWORD (at least 6 characters)</label><input id="rp" type="password" autocomplete="new-password">
+<label for="rp">PASSWORD (8+ characters, letters and numbers)</label><input id="rp" type="password" autocomplete="new-password">
 <label for="rq">CONFIRM PASSWORD</label><input id="rq" type="password" autocomplete="new-password">
+<div class="pw"><i id="pwb"></i></div><div class="ph" id="pwt"></div>
 <label class="sp"><input type="checkbox" data-show="rp,rq"> Show password</label>
 <div class="am" id="rm"></div>
 <button class="ab" type="submit">Create account</button>
@@ -114,9 +123,9 @@ input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 2px #e7c76688
 <button class="ab" type="submit">Send reset link</button>
 <div class="rw"><button class="lk" type="button" data-go="vl">Back to log in</button></div></form>
 </div></div>
-<div id="bar"><h1>HAZRI BOOK</h1><button id="pv">‹</button><input id="go" type="number" min="1" inputmode="numeric"><span id="of" style="font:bold 13px Helvetica">/100</span><button id="nx">›</button><button id="sb" aria-label="Search">🔍</button><button id="mb" aria-label="Menu">☰</button></div>
+<div id="home" hidden><div class="hc"><h1>HAZRI BOOK</h1><p style="text-align:center">Dashboard • Saved attendance records</p><button id="hnew">➕ New attendance sheet</button><button id="hcontinue">📖 Continue current sheet</button><button id="hsaved">💾 Saved / Final files</button><button id="hbackup">📥 Download full backup</button><div id="hlist"></div><small>Drafts can be edited. Final records are view-only. Keep a downloaded backup for safety.</small></div></div><div id="bar"><button id="hopen" title="Dashboard">⌂</button><h1>HAZRI BOOK</h1><button id="pv">‹</button><input id="go" type="number" min="1" inputmode="numeric"><span id="of" style="font:bold 13px Helvetica">/100</span><button id="nx">›</button><button id="sb" aria-label="Search">🔍</button><button id="mb" aria-label="Menu">☰</button></div>
 <div id="cnt"></div><div id="stage"></div><div id="md"><div></div></div><div id="mn"><div><h3>Hazri Book Menu</h3><small>Your writing saves automatically on this phone. Make a backup file to keep it safe.</small>
-<button class="gd" id="mad">➕ Add Sheets</button>
+<button class="gd" id="mlock">🔒 Save &amp; Lock this sheet (FINAL)</button><button id="mdraft">💾 Save Draft</button><button id="mhome">⌂ Dashboard / Saved files</button><button class="gd" id="mad">➕ Add Sheets</button>
 <button class="gd" id="mbk">💾 Save Data (Backup file)</button>
 <label class="b">📂 Restore Data from Backup<input type="file" id="mrs" accept=".json,application/json" hidden></label>
 <button class="wa" id="mwa">💬 Send this sheet PDF on WhatsApp</button>
@@ -133,7 +142,7 @@ let fw=0;const sv=(i,v)=>{try{localStorage.setItem('hb_'+i,JSON.stringify(v))}ca
 try{N=Math.max(100,Math.min(MAXN,+localStorage.getItem('hb_count')||100));cur=Math.min(N-1,+localStorage.getItem('hb_cur')||0)}catch(e){}
 /*T-start*/
 const DEFK=['cc','cc2','rt','cur'];
-function hasData(v){for(const k in v){if(DEFK.includes(k))continue;if(String(v[k]==null?'':v[k]).trim()!=='')return true}return false}
+function hasData(v){for(const k in v){if(DEFK.includes(k)||k==='_locked'||k==='_lockedAt')continue;if(String(v[k]==null?'':v[k]).trim()!=='')return true}return false}
 function hasRaw(r){try{return hasData(JSON.parse(r||'{}'))}catch(e){return false}}
 function keyIdx(){const a=[];try{for(let k=0;k<localStorage.length;k++){const m=/^hb_(\d+)$/.exec(localStorage.key(k));if(m)a.push(+m[1])}}catch(e){}return a.sort((x,y)=>x-y)}
 function addSheetsCore(n){n=Math.floor(+n);if(!(n>=1))return{error:'Enter a number of 1 or more.'};
@@ -142,7 +151,7 @@ function addSheetsCore(n){n=Math.floor(+n);if(!(n>=1))return{error:'Enter a numb
  return{from,to:N}}
 function mergeBackup(j,mode){const d=j.data||{},r={added:0,kept:0,replaced:0,error:''};let max=0;
  try{for(const k of Object.keys(d)){const m=/^hb_(\d+)$/.exec(k);if(!m)continue;const i=+m[1];if(i>=MAXN||!hasRaw(d[k]))continue;max=Math.max(max,i+1);
-  const had=hasData(ld(i));if(had&&mode!=='replace'){r.kept++;continue}localStorage.setItem(k,d[k]);if(had)r.replaced++;else r.added++}
+  const had=hasData(ld(i));if(ld(i)._locked){r.kept++;continue}if(had&&mode!=='replace'){r.kept++;continue}localStorage.setItem(k,d[k]);if(had)r.replaced++;else r.added++}
   N=Math.max(N,Math.min(MAXN,+j.count||0),max);localStorage.setItem('hb_count',String(N))}
  catch(e){r.error='Phone storage became full while restoring. Part of the backup was restored.'}return r}
 /*T-end*/
@@ -150,7 +159,7 @@ function mergeBackup(j,mode){const d=j.data||{},r={added:0,kept:0,replaced:0,err
 try{N=Math.max(N,Math.min(MAXN,(keyIdx().pop()||0)+1));cur=Math.min(N-1,cur)}catch(e){}
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 function mk(i){
- const v=ld(i),d=document.createElement('div');d.className='page';d.style.zIndex=N-i;
+ const v=ld(i),d=document.createElement('div');d.className='page';if(v._locked)d.classList.add('locked');d.style.zIndex=N-i;
  const HO=Array.from({length:32},(_,n)=>`<option>${(n+1)/2}</option>`).join('');
  const SG=k=>`<button class="sg" data-s="${k}">${(v[k]||'').startsWith('data:')?`<img src="${v[k]}">`:(esc(v[k])||'✍')}</button>`;
  const I=(k,ph,x)=>`<input data-k="${k}" value="${esc(v[k])}" placeholder="${ph||''}" ${x||''}>`;
@@ -167,9 +176,9 @@ function mk(i){
  for(let r=1;r<=31;r++){const z=v['a'+r+'_s'];h+=`<div class="d">${r}</div><div><button class="st p ${z=='P'?'on':''}" data-st="${r}:P">✓</button></div><div><button class="st x ${z=='A'?'on':''}" data-st="${r}:A">✗</button></div><div><input type="time" data-k="a${r}_t0" value="${esc(v['a'+r+'_t0'])}"></div><div><input type="time" data-k="a${r}_t1" value="${esc(v['a'+r+'_t1'])}"></div><div><select data-k="a${r}_h"><option value="">–</option>${HO}</select></div>`}
  h+=`</div><div class="tot"><span>Present: <b id="pp${i}">0</b></span><span>Absent: <b id="ab${i}">0</b></span><span>Hours: <b id="hr${i}">0</b></span></div><div class="sum"><div><span>Earned (<span id="rm${i}"></span>)</span><span id="ea${i}">0</span></div><div><span>Paid</span><span id="pd${i}">0</span></div><div class="bl"><span>Balance to pay</span><span id="bl${i}">0</span></div></div><p class="pn">Tap ✓ = present, ✗ = absent. Set start/end time or pick hours.</p>`;
  d.innerHTML=h;d.querySelectorAll('select[data-k$="_h"]').forEach(q=>q.value=v[q.dataset.k]||'');tots(d,i,v);
- d.addEventListener('click',e=>{const sb=e.target.closest('.sg');if(sb){openPad(i,sb.dataset.s,sb);return}
+ d.addEventListener('click',e=>{if(ld(i)._locked)return;const sb=e.target.closest('.sg');if(sb){openPad(i,sb.dataset.s,sb);return}
  const tb=e.target.closest('.st');if(tb){const[r,z]=tb.dataset.st.split(':'),v=ld(i),k='a'+r+'_s';v[k]=v[k]==z?'':z;sv(i,v);d.querySelectorAll(`[data-st^="${r}:"]`).forEach(q=>q.classList.toggle('on',q.dataset.st.split(':')[1]==v[k]));tots(d,i,v)}});
- d.addEventListener('input',e=>{const k=e.target.dataset.k;if(!k)return;const v=ld(i);v[k]=e.target.value;const m=k.match(/^a(\d+)_t[01]$/);
+ d.addEventListener('input',e=>{if(ld(i)._locked)return;const k=e.target.dataset.k;if(!k)return;const v=ld(i);v[k]=e.target.value;const m=k.match(/^a(\d+)_t[01]$/);
   if(m){const a=v['a'+m[1]+'_t0'],b=v['a'+m[1]+'_t1'];if(a&&b){const t=x=>+x.slice(0,2)*60+ +x.slice(3,5);let h=(t(b)-t(a)+1440)%1440/60;h=Math.min(16,Math.max(.5,Math.round(h*2)/2));v['a'+m[1]+'_h']=String(h);const q=d.querySelector(`[data-k="a${m[1]}_h"]`);if(q)q.value=String(h)}}
   sv(i,v);tots(d,i,v)});
  st.appendChild(d);return d}
@@ -179,7 +188,7 @@ function pp(e){const r=pc.getBoundingClientRect();return[(e.clientX-r.left)*pc.w
 pc.onpointerdown=e=>{pd=true;ink=true;pc.setPointerCapture(e.pointerId);const[x,y]=pp(e);cx.beginPath();cx.moveTo(x,y);cx.lineTo(x+.1,y+.1);cx.stroke()};
 pc.onpointermove=e=>{if(!pd)return;const[x,y]=pp(e);cx.lineTo(x,y);cx.stroke()};
 pc.onpointerup=pc.onpointercancel=()=>{pd=false};
-function openPad(i,k,btn){pk={i,k,btn};cx.clearRect(0,0,pc.width,pc.height);ink=false;document.getElementById('pm').style.display='flex'}
+function openPad(i,k,btn){if(ld(i)._locked)return;pk={i,k,btn};cx.clearRect(0,0,pc.width,pc.height);ink=false;document.getElementById('pm').style.display='flex'}
 document.getElementById('pcl').onclick=()=>{cx.clearRect(0,0,pc.width,pc.height);ink=false};
 document.getElementById('pcn').onclick=()=>{document.getElementById('pm').style.display='none'};
 document.getElementById('psv').onclick=()=>{if(!pk)return;const v=ld(pk.i);v[pk.k]=ink?pc.toDataURL('image/png'):'';sv(pk.i,v);
@@ -233,6 +242,13 @@ function bk(){const o={};try{for(let k=0;k<localStorage.length;k++){const n=loca
 const lastB=()=>{try{const x=localStorage.getItem('hbm_last');$('mlast').textContent=x?'Last backup: '+x:'No backup made yet.'}catch(e){}};
 const shut=()=>$('mn').style.display='none';
 $('mb').onclick=()=>{lastB();infoMenu();$('mn').style.display='flex'};$('mcl').onclick=shut;$('mn').onclick=e=>{if(e.target.id=='mn')shut()};
+function homeShow(){shut();$('home').hidden=false;homeList(false)}
+function homeHide(){$('home').hidden=true}
+function homeList(onlyFinal){const box=$('hlist');box.innerHTML='<h3>'+(onlyFinal?'Saved / Final files':'Recent sheets')+'</h3>';const ids=keyIdx().filter(i=>hasData(ld(i))&&(!onlyFinal||ld(i)._locked)).reverse();if(!ids.length){box.insertAdjacentHTML('beforeend','<p>No records found.</p>');return}ids.forEach(i=>{const v=ld(i),row=document.createElement('div');row.className='saved';const title=document.createElement('div');title.textContent='Sheet '+(i+1)+' • '+(v.name||'Unnamed')+' • '+(v._locked?'🔒 FINAL':'Draft');row.appendChild(title);if(v._locked){const small=document.createElement('small');small.textContent='Locked: '+new Date(v._lockedAt||Date.now()).toLocaleString();row.appendChild(small)}const b=document.createElement('button');b.textContent=v._locked?'👁 View only':'✏️ Open draft';b.onclick=()=>{homeHide();go(i)};row.appendChild(b);if(v._locked){const pdf=document.createElement('button');pdf.textContent='📄 Download final PDF';pdf.onclick=async()=>{try{const blob=makePdf(i);await outFile(blob,'Hazri_FINAL_Sheet_'+(i+1)+'.pdf','application/pdf',false)}catch(e){toast('Could not create PDF. Check internet connection.')}};row.appendChild(pdf)}box.appendChild(row)})}
+$('hopen').onclick=homeShow;$('mhome').onclick=homeShow;$('hcontinue').onclick=homeHide;$('hsaved').onclick=()=>homeList(true);$('hbackup').onclick=()=>$('mbk').click();
+$('hnew').onclick=()=>{let i=keyIdx().find(i=>!hasData(ld(i))&&!ld(i)._locked);if(i===undefined){i=N;const r=addSheetsCore(1);if(r.error){toast(r.error);return}}homeHide();go(i)};
+$('mdraft').onclick=()=>{shut();toast(ld(cur)._locked?'This record is final and locked.':'Draft saved automatically on this phone. Cloud sync runs when connected.')};
+$('mlock').onclick=()=>{shut();const v=ld(cur);if(v._locked){toast('Already final and locked.');return}if(!hasData(v)){toast('Enter employee details before finalizing.');return}if(!confirm('FINAL SAVE: This sheet will become VIEW ONLY. You cannot edit it in the app after locking. Continue?'))return;v._locked=true;v._lockedAt=new Date().toISOString();sv(cur,v);if(P[cur]){P[cur].remove();delete P[cur]}render();toast('Sheet '+(cur+1)+' saved and locked. Download a PDF or backup for your records.')};
 $('mbk').onclick=async()=>{const f=bk(),r=await outFile(f.b,f.n,'application/json',false);if(r=='saved'){try{localStorage.setItem('hbm_last',f.n.slice(-15,-5))}catch(e){}shut();toast('Backup file saved: '+f.n)}};
 $('mwb').onclick=async()=>{const f=bk(),r=await outFile(f.b,f.n,'application/json',true);shut();if(r=='saved')toast('Backup saved. '+WA+' and attach the file.')};
 $('mpd').onclick=async()=>{const p=pdfOf();if(!p)return;const r=await outFile(p.b,p.n,'application/pdf',false);shut();if(r=='saved')toast('PDF saved: '+p.n)};
@@ -301,7 +317,7 @@ const ERR={
  'auth/invalid-credential':'Email or password is wrong.',
  'auth/invalid-login-credentials':'Email or password is wrong.',
  'auth/email-already-in-use':'An account with this email already exists. Please log in.',
- 'auth/weak-password':'Password is too weak. Use at least 6 characters.',
+ 'auth/weak-password':'Password is too weak. Use at least 8 characters with letters and numbers.',
  'auth/too-many-requests':'Too many attempts. Please wait a few minutes and try again.',
  'auth/network-request-failed':'No internet connection. Please try again.',
  'auth/user-disabled':'This account has been disabled.',
@@ -325,7 +341,7 @@ function warn(t){const w=q('aw');w.textContent=t;w.style.display='block'}
 
 /* Offline fallback: SDK could not load */
 if(typeof firebase==='undefined'){
- if(known()){gate.style.display='none';q('macc').textContent='Offline - signed in as '+known();
+ if(known()){gate.style.display='none';q('macc').textContent='Offline - signed in as '+known();homeShow();
   q('mlo').onclick=()=>toast('Connect to the internet to log out.');q('mda').onclick=()=>toast('Connect to the internet to delete your account.');q('msy').onclick=()=>toast('No cloud connection right now.');return}
  show('vo');return}
 
@@ -437,7 +453,7 @@ function acc(u){q('macc').textContent='Signed in: '+(u.displayName?u.displayName
 function begin(u){
  if(!ls.get('hbm_owner')){try{_set.call(localStorage,'hbm_owner',u.uid)}catch(e){}
   keyIdx().forEach(i=>{if(hasRaw(ls.get('hb_'+i))){TS[i]=Date.now();DIRTY.add(i);VER[i]=(VER[i]||0)+1}});persist()}
- gate.style.display='none';acc(u);ready=true;refresh();sync()}
+ gate.style.display='none';acc(u);ready=true;refresh();homeShow();sync()}
 function start(u){
  user=u;loadState();
  const owner=ls.get('hbm_owner'),has=keyIdx().some(i=>hasRaw(ls.get('hb_'+i)));
@@ -459,10 +475,21 @@ q('vl').onsubmit=async e=>{e.preventDefault();const f=e.target;msg('lm','');
  if(!em_||!pw){msg('lm',!em_?ERR['auth/missing-email']:ERR['auth/missing-password']);return}
  busy_(f,true);try{await auth.signInWithEmailAndPassword(em_,pw)}catch(x){msg('lm',em(x))}busy_(f,false)};
 
+const COMMON=['12345678','123456789','1234567890','password','password1','qwerty123','11111111','iloveyou1','abc12345','12341234'];
+function pwCheck(p,m){if(p.length<8)return 'Password must be at least 8 characters.';
+ if(!/[A-Za-z]/.test(p)||!/\d/.test(p))return 'Password must have at least one letter and one number.';
+ if(COMMON.includes(p.toLowerCase()))return 'This password is too common. Choose another.';
+ const u=(m||'').split('@')[0].toLowerCase();if(u.length>=4&&p.toLowerCase().includes(u))return 'Password must not contain your email name.';return ''}
+function pwScore(p){let s=0;if(p.length>=8)s++;if(p.length>=12)s++;if(/[a-z]/.test(p)&&/[A-Z]/.test(p))s++;if(/\d/.test(p))s++;if(/[^A-Za-z0-9]/.test(p))s++;return s}
+function pwLive(){const p=q('rp').value,c=q('rq').value,s=p?pwScore(p):0,b=q('pwb');
+ b.style.width=(s*20)+'%';b.style.background=s<3?'#d32f2f':s<4?'#e0a000':'#1a7a43';
+ q('pwt').textContent=p?(s<3?'Weak':s<4?'Medium':'Strong'):'';
+ if(c)msg('rm',p===c?'Passwords match.':'The two passwords do not match.',p===c)}
+q('rp').oninput=pwLive;q('rq').oninput=pwLive;
 q('vr').onsubmit=async e=>{e.preventDefault();const f=e.target;msg('rm','');
  const n=q('rn').value.trim(),m=q('re').value.trim(),p=q('rp').value,c=q('rq').value;
  if(!m){msg('rm',ERR['auth/missing-email']);return}
- if(p.length<6){msg('rm',ERR['auth/weak-password']);return}
+ const pe=pwCheck(p,m);if(pe){msg('rm',pe);return}
  if(p!==c){msg('rm','The two passwords do not match.');return}
  busy_(f,true);
  try{const r=await auth.createUserWithEmailAndPassword(m,p);

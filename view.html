@@ -1,0 +1,32 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Hazri Book - My Attendance</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#b8892b">
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<style>
+html{background:#b8892b}body{margin:0;min-height:100vh;background:linear-gradient(160deg,#8a6516,#d9b04a 40%,#f0d27a 65%,#b8892b);font-family:Helvetica,Arial,sans-serif;color:#3b2a06;padding:calc(18px + env(safe-area-inset-top,0px)) 14px calc(18px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
+.c{max-width:440px;margin:0 auto;background:#fffaf0;border:2px solid #b8892b;border-radius:14px;padding:18px;box-shadow:0 8px 30px #0006}
+h1{margin:0;text-align:center;font:bold 24px Georgia,serif;letter-spacing:2px;color:#7a5a14}h2{margin:2px 0 12px;text-align:center;font:bold 14px Georgia,serif;letter-spacing:3px;color:#7a5a14}
+.n{font:bold 20px Georgia,serif;text-align:center}.m{text-align:center;color:#7a5a14;margin:2px 0 12px}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.g div{background:#fff;border:1px solid #d9bd6b;border-radius:10px;padding:8px;text-align:center}.g b{display:block;font-size:20px}.g span{font-size:11px;color:#7a5a14}
+.b{background:linear-gradient(135deg,#9a7218,#e7c766);color:#2a1d02;font-weight:bold}.b span{color:#2a1d02}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0}th,td{border-bottom:1px solid #e9dcae;padding:6px 4px;text-align:center}th{font-size:11px;color:#7a5a14}.P{color:#1a7a43;font-weight:bold}.A{color:#b00020;font-weight:bold}
+.u{text-align:center;font-size:12px;color:#7a5a14;margin-top:10px}.e{text-align:center;padding:20px 4px}
+</style></head><body><div class="c" id="c"><h1>HAZRI BOOK</h1><h2>MY ATTENDANCE</h2><div class="e" id="x">Loading…</div></div>
+<script>
+const CFG={apiKey:"AIzaSyD7dt3O1ApbBeVAWeMySvEp34ya1I_wTZY",authDomain:"hazribook-2afe0.firebaseapp.com",projectId:"hazribook-2afe0",appId:"1:995397160148:web:11e1f87a890fa7c8e2bf41"};
+const x=document.getElementById('x'),c=document.getElementById('c'),t=(new URLSearchParams(location.search).get('t')||'').replace(/[^a-f0-9]/gi,'');
+const E=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function dead(m){x.textContent=m}
+if(t.length<20)dead('This link is not valid.');else{
+ firebase.initializeApp(CFG);
+ firebase.firestore().collection('shares').doc(t).onSnapshot(s=>{
+  if(!s.exists||s.data().active!==true){dead('This link is not available. Ask your contractor for a new link.');return}
+  const d=s.data(),f=n=>(Math.round(n*100)/100).toLocaleString();
+  c.innerHTML='<h1>HAZRI BOOK</h1><h2>MY ATTENDANCE</h2><div class="n">'+E(d.name)+'</div><div class="m">'+E(d.mon||'Current month')+'</div>'+
+  '<div class="g"><div><b class="P">'+d.present+'</b><span>Present days</span></div><div><b class="A">'+d.absent+'</b><span>Absent days</span></div><div><b>'+d.hours+'</b><span>Working hours</span></div><div><b>'+f(d.rate)+'</b><span>'+E(d.cur)+' per '+d.per+'</span></div>'+
+  '<div><b>'+f(d.earned)+'</b><span>Total earned</span></div><div><b>'+f(d.paid)+'</b><span>Total payments</span></div><div class="b" style="grid-column:1/3"><b>'+f(d.balance)+' '+E(d.cur)+'</b><span>Remaining balance</span></div></div>'+
+  '<table><tr><th>DAY</th><th></th><th>FROM</th><th>TO</th><th>HOURS</th></tr>'+(d.days||[]).map(r=>'<tr><td>'+r.d+'</td><td class="'+r.s+'">'+(r.s=='P'?'✓':r.s=='A'?'✗':'')+'</td><td>'+E(r.a)+'</td><td>'+E(r.b)+'</td><td>'+(r.h||'')+'</td></tr>').join('')+'</table>'+
+  ((d.pays||[]).length?'<table><tr><th>PAYMENT DATE</th><th>AMOUNT</th></tr>'+d.pays.map(p=>'<tr><td>'+E(p.d)+'</td><td>'+f(p.a)+'</td></tr>').join('')+'</table>':'')+
+  '<div class="u">Last updated: '+new Date(d.updated).toLocaleString()+'<br>View only</div>'},
+ ()=>dead('This link is not available. Ask your contractor for a new link.'))}
+</script></body></html>
