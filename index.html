@@ -58,6 +58,12 @@ input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 2px #e7c76688
 #cnt{font:11px Helvetica,Arial;color:var(--gl);text-align:center;background:#2a1d02;padding:3px}
 
 #au{position:fixed;inset:0;z-index:200;background:var(--bg);overflow-y:auto;padding:calc(24px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px));box-sizing:border-box;font-family:Helvetica,Arial,sans-serif}
+#tb{position:fixed;left:0;right:0;bottom:0;z-index:95;display:flex;gap:4px;background:linear-gradient(135deg,#6f4f0f,#c79a2c 55%,#8a6414);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));box-shadow:0 -3px 12px #0007;border-top:1px solid #f0d27a}
+#tb button{flex:1;margin:0;background:none;border:0;color:#2a1d02;font:bold 11px Helvetica,Arial,sans-serif;padding:5px 0;display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:10px}
+#tb button i{font-style:normal;font-size:20px;line-height:1}#tb button.on{background:#fffaf0b0}
+body{box-sizing:border-box;padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+#home{padding-bottom:calc(86px + env(safe-area-inset-bottom,0px))!important}
+.st h4{margin:12px 0 4px;color:#7a5a14;font:bold 12px Helvetica,Arial;letter-spacing:1px;text-transform:uppercase}
 #au .hd{max-width:400px;margin:0 auto 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 #au .fl{width:46px;height:auto;flex:none;border:1px solid #5a4210;border-radius:3px;box-shadow:0 2px 6px #0005}
 #au .bs{flex:1;text-align:center;color:#2a1d02}
@@ -126,12 +132,15 @@ input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 2px #e7c76688
 <div id="home" hidden><div class="hc"><h1>HAZRI BOOK</h1><p style="text-align:center">Dashboard • Saved attendance records</p><button id="hnew">➕ New attendance sheet</button><button id="hcontinue">📖 Continue current sheet</button><button id="hsaved">💾 Saved / Final files</button><button id="hbackup">📥 Download full backup</button><div id="hlist"></div><small>Drafts can be edited. Final records are view-only. Keep a downloaded backup for safety.</small></div></div><div id="bar"><button id="hopen" title="Dashboard">⌂</button><h1>HAZRI BOOK</h1><button id="pv">‹</button><input id="go" type="number" min="1" inputmode="numeric"><span id="of" style="font:bold 13px Helvetica">/100</span><button id="nx">›</button><button id="sb" aria-label="Search">🔍</button><button id="mb" aria-label="Menu">☰</button></div>
 <div id="cnt"></div><div id="stage"></div><div id="md"><div></div></div><div id="mn"><div><h3>Hazri Book Menu</h3><small>Your writing saves automatically on this phone. Make a backup file to keep it safe.</small>
 <button class="gd" id="mlock">🔒 Save &amp; Lock this sheet (FINAL)</button><button id="mdraft">💾 Save Draft</button><button id="mhome">⌂ Dashboard / Saved files</button><button class="gd" id="mad">➕ Add Sheets</button>
+<button class="gd" id="mlv">🔗 Share live attendance (this sheet)</button>
+<button class="gd" id="mrp">📊 Save readable report (nice file)</button>
 <button class="gd" id="mbk">💾 Save Data (Backup file)</button>
 <label class="b">📂 Restore Data from Backup<input type="file" id="mrs" accept=".json,application/json" hidden></label>
 <button class="wa" id="mwa">💬 Send this sheet PDF on WhatsApp</button>
 <button id="mpd">📄 Download this sheet PDF</button>
 <button id="mwb">📤 Send Backup on WhatsApp</button>
-<small id="minfo"></small><small id="mlast"></small><small id="macc"></small><small id="msync"></small><button id="msy">🔄 Sync now (cloud)</button><button id="mlo">🚪 Log out</button><button id="mda" class="dg">🗑 Delete my account</button><button id="mcl">Close</button></div></div><div id="sr"><div><input id="sq" placeholder="Search name, ID, phone, shop, or sheet number" autocomplete="off"><div class="rs" id="srs"></div></div></div><div id="ts"></div><div id="pm"><div><b>Sign here with finger</b><canvas id="pc" width="500" height="200"></canvas><div class="bt"><button id="pcl">Clear</button><button id="pcn">Cancel</button><button id="psv" class="ok">Save</button></div></div></div>
+<small id="minfo"></small><small id="mlast"></small><small id="macc"></small><small id="msync"></small><button id="msy">🔄 Sync now (cloud)</button><button id="mlo">🚪 Log out</button><button id="mda" class="dg">🗑 Delete my account</button><button id="mcl">Close</button></div></div><div id="sr"><div><input id="sq" placeholder="Search name, ID, phone, shop, or sheet number" autocomplete="off"><div class="rs" id="srs"></div></div></div><div id="ts"></div><nav id="tb"><button id="tbh"><i>🏠</i>Home</button><button id="tbs"><i>📖</i>Sheet</button><button id="tbl"><i>🔗</i>Live link</button><button id="tbg"><i>⚙️</i>Settings</button></nav>
+<div id="pm"><div><b>Sign here with finger</b><canvas id="pc" width="500" height="200"></canvas><div class="bt"><button id="pcl">Clear</button><button id="pcn">Cancel</button><button id="psv" class="ok">Save</button></div></div></div>
 <script>
 const MAXN=100000,st=document.getElementById('stage');let N=100;
 const CC=['+974 Qatar','+92 Pakistan','+91 India','+880 Bangladesh','+977 Nepal','+94 Sri Lanka','+63 Philippines','+20 Egypt','+966 Saudi Arabia','+971 UAE','+965 Kuwait','+973 Bahrain','+968 Oman','+962 Jordan','+44 UK','+1 USA/Canada'];
@@ -538,6 +547,88 @@ q('mda').onclick=()=>{shut();
    err.textContent=(c==='auth/wrong-password'||c==='auth/invalid-credential'||c==='auth/invalid-login-credentials')?'Wrong password.':
     c==='cloud/failed'||c==='cloud/not-ready'?'Could not delete your cloud data, so the account was NOT deleted. Check your internet and try again.':em(x)}}
 };
+})();
+
+/* ===== Live attendance link (read-only, token based, Firestore shares/{token}) ===== */
+(function(){
+const FS=()=>firebase.firestore(),U=()=>firebase.auth().currentUser,$=id=>document.getElementById(id);
+const tok=()=>{const a=new Uint8Array(18);crypto.getRandomValues(a);return Array.from(a,b=>b.toString(16).padStart(2,'0')).join('')};
+const R=n=>Math.round(n*100)/100,get=i=>{try{return JSON.parse(localStorage.getItem('hb_'+i)||'{}')}catch(e){return{}}};
+const put=(i,v)=>{try{localStorage.setItem('hb_'+i,JSON.stringify(v))}catch(e){}};
+const base=()=>location.origin+location.pathname.replace(/[^\/]*$/,'')+'view.html?t=';
+function snap(v){let pr=0,ab=0,hr=0,pd=0;const days=[],pays=[];
+ for(let r=1;r<=31;r++){const z=v['a'+r+'_s']||'',h=parseFloat(v['a'+r+'_h'])||0;if(z=='P')pr++;if(z=='A')ab++;hr+=h;if(z||h)days.push({d:r,s:z,h:h,a:v['a'+r+'_t0']||'',b:v['a'+r+'_t1']||''})}
+ for(let r=0;r<12;r++){const a=parseFloat(v['pa'+r])||0;pd+=a;if(a)pays.push({d:v['pd'+r]||'',a:a})}
+ const rate=parseFloat(v.rate)||0,per=v.rt=='Per hour'?'hour':'day',ea=R(rate*(per=='hour'?hr:pr));
+ return{name:v.name||'',mon:v.mon||'',rate:rate,per:per,cur:v.cur||'QAR',days:days,pays:pays,present:pr,absent:ab,hours:R(hr),earned:ea,paid:R(pd),balance:R(ea-pd),updated:Date.now()}}
+const T={};
+function push(i){const v=get(i),sh=v._share;if(!sh||!sh.t||!U())return;
+ FS().collection('shares').doc(sh.t).set(Object.assign({owner:U().uid,active:true,sheet:i,created:sh.c},snap(v))).catch(()=>{})}
+function soon(i){clearTimeout(T[i]);T[i]=setTimeout(()=>push(i),1500)}
+const _s2=Storage.prototype.setItem;
+Storage.prototype.setItem=function(k){const r=_s2.apply(this,arguments);if(this===localStorage){const m=/^hb_(\d+)$/.exec(k);if(m&&get(+m[1])._share)soon(+m[1])}return r};
+const cur=()=>+localStorage.getItem('hb_cur')||0,esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+async function make(i){if(!U()){alert('Log in first.');return}const v=get(i);if(!(v.name||'').trim()){alert('Write the employee NAME on this sheet first.');return}
+ v._share={t:tok(),c:Date.now()};put(i,v);await FS().collection('shares').doc(v._share.t).set(Object.assign({owner:U().uid,active:true,sheet:i,created:v._share.c},snap(v)))}
+async function off(i){const v=get(i),sh=v._share;if(!sh)return;
+ try{await FS().collection('shares').doc(sh.t).set({owner:U().uid,active:false,sheet:i,revoked:Date.now()})}catch(e){alert('Could not disable the link. Check your internet and try again.');return false}
+ delete v._share;put(i,v);return true}
+function panel(){const i=cur(),v=get(i),sh=v._share,b=md('<h3>Live attendance link</h3>'+
+ (sh?'<p style="font-size:13px">Employee: <b>'+esc(v.name)+'</b><br>Created: '+new Date(sh.c).toLocaleString()+'<br>The employee sees attendance, hours, salary and balance only. He cannot change anything.</p><input id="lvu" readonly value="'+esc(base()+sh.t)+'" style="width:100%;box-sizing:border-box">'+
+  '<button class="gd" id="lvc">Copy link</button><button class="gd" id="lvw">Share on WhatsApp</button><button class="gd" id="lvr">New link (old one stops)</button><button class="gd" id="lvx" style="background:#d32f2f;color:#fff">Disable link</button>'
+  :'<p style="font-size:13px">No live link for this sheet yet.</p><button class="gd" id="lvn">Create live link</button>')+'<button class="gd" id="lvz">Close</button><div class="em2" id="lve"></div>');
+ const on=(id,f)=>{const e=b.querySelector('#'+id);if(e)e.onclick=f};
+ on('lvz',mdClose);on('lvn',async()=>{try{await make(i);panel()}catch(e){$('lve').textContent='Could not create the link. Check internet and Firestore rules.'}});
+ on('lvc',()=>{const u=b.querySelector('#lvu');u.select();try{navigator.clipboard.writeText(u.value)}catch(e){document.execCommand('copy')}$('lve').textContent='Link copied.'});
+ on('lvw',()=>{const m='HAZRI BOOK\n\nYour live attendance record is ready.\n\nEmployee: '+v.name+'\n\nOpen your personal attendance link below to check your daily attendance, working hours, salary and payment balance.\n\n'+base()+sh.t+'\n\nThis link is for viewing only.';window.open('https://wa.me/?text='+encodeURIComponent(m),'_blank')});
+ on('lvx',async()=>{if(confirm('Disable this link? The employee will not be able to open it.')&&await off(i))panel()});
+ on('lvr',async()=>{if(!confirm('Make a new link? The old link will stop working.'))return;if(await off(i)){try{await make(i);panel()}catch(e){$('lve').textContent='Could not create the new link.'}}})}
+$('mlv').onclick=()=>{$('mn').style.display='none';panel()};
+})();
+
+/* ===== Readable gold report of all sheets (the .json backup stays for Restore) ===== */
+(function(){
+const R=n=>Math.round(n*100)/100,E=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function card(i,v){let pr=0,ab=0,hr=0,pd=0,dr='',pr2='';
+ for(let r=1;r<=31;r++){const z=v['a'+r+'_s']||'',h=parseFloat(v['a'+r+'_h'])||0;if(z=='P')pr++;if(z=='A')ab++;hr+=h;
+  if(z||h)dr+='<tr><td>'+r+'</td><td class="'+z+'">'+(z=='P'?'Present':z=='A'?'Absent':'')+'</td><td>'+E(v['a'+r+'_t0'])+'</td><td>'+E(v['a'+r+'_t1'])+'</td><td>'+(h||'')+'</td></tr>'}
+ for(let r=0;r<12;r++){const a=parseFloat(v['pa'+r])||0;pd+=a;if(a)pr2+='<tr><td>'+E(v['pd'+r])+'</td><td>'+a+'</td></tr>'}
+ const rate=parseFloat(v.rate)||0,ea=R(rate*(v.rt=='Per hour'?hr:pr)),cu=E(v.cur||'QAR');
+ const L=(k,x)=>x?'<div><span>'+k+'</span> '+E(x)+'</div>':'';
+ return '<section><h2>Sheet '+(i+1)+' &bull; '+E(v.name||'(no name)')+(v._locked?' <em>FINAL</em>':' <em class="d">Draft</em>')+'</h2><div class="info">'+L('Father',v.father)+L('ID no.',v.id)+L('Phone',((v.cc||'')+' '+(v.phone||'')).trim()==''?'':((v.cc||'')+' '+(v.phone||'')))+L('Address',v.addr)+L('Office / shop',v.shop)+L('Month',v.mon)+L('Wage',rate?rate+' '+cu+' '+(v.rt||'Per day').toLowerCase():'')+'</div>'+
+ '<div class="g"><div><b>'+pr+'</b>Present</div><div><b>'+ab+'</b>Absent</div><div><b>'+R(hr)+'</b>Hours</div><div><b>'+ea+'</b>Earned '+cu+'</div><div><b>'+R(pd)+'</b>Paid '+cu+'</div><div class="bal"><b>'+R(ea-pd)+'</b>Balance '+cu+'</div></div>'+
+ (dr?'<table><tr><th>Day</th><th>Status</th><th>From</th><th>To</th><th>Hours</th></tr>'+dr+'</table>':'')+(pr2?'<table><tr><th>Payment date</th><th>Amount</th></tr>'+pr2+'</table>':'')+'</section>'}
+function report(){let n=0,body='';for(let i=0;i<N;i++){const v=ld(i);if(!hasData(v))continue;n++;body+=card(i,v)}
+ const d=new Date().toLocaleString();
+ return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hazri Book Report</title><style>'+
+ 'body{margin:0;padding:16px;background:linear-gradient(160deg,#8a6516,#d9b04a 40%,#f0d27a 65%,#b8892b);font-family:Helvetica,Arial,sans-serif;color:#3b2a06}'+
+ '.w{max-width:520px;margin:0 auto}h1{text-align:center;font:bold 26px Georgia,serif;letter-spacing:3px;color:#2a1d02;margin:6px 0}.s{text-align:center;font-size:13px;margin-bottom:14px;color:#2a1d02}'+
+ 'section{background:#fffaf0;border:2px solid #b8892b;border-radius:14px;padding:14px;margin:0 0 14px;box-shadow:0 4px 14px #0004}h2{margin:0 0 8px;font:bold 17px Georgia,serif;color:#7a5a14}h2 em{font:12px Helvetica;background:#1a7a43;color:#fff;border-radius:8px;padding:2px 7px;margin-left:6px;font-style:normal}h2 em.d{background:#b8892b}'+
+ '.info{font-size:13px;margin-bottom:8px}.info span{color:#7a5a14;font-weight:bold}.g{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}.g div{background:#fff;border:1px solid #d9bd6b;border-radius:10px;padding:6px;text-align:center;font-size:11px;color:#7a5a14}.g b{display:block;font-size:17px;color:#3b2a06}.g .bal{background:linear-gradient(135deg,#9a7218,#e7c766);color:#2a1d02}'+
+ 'table{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0}th,td{border-bottom:1px solid #e9dcae;padding:4px;text-align:center}th{font-size:11px;color:#7a5a14}.P{color:#1a7a43;font-weight:bold}.A{color:#b00020;font-weight:bold}</style></head><body><div class="w"><h1>HAZRI BOOK</h1><div class="s">Readable report &bull; '+n+' sheet(s) with data &bull; '+d+'</div>'+
+ (body||'<section>No sheets with data yet.</section>')+'<div class="s">This file is for reading and printing. To restore your data use the Backup file (.json).</div></div></body></html>'}
+document.getElementById('mrp').onclick=async()=>{const d=new Date().toISOString().slice(0,10),r=await outFile(new Blob([report()],{type:'text/html'}),'HazriBook_Report_'+d+'.html','text/html',false);if(r=='saved'){shut();toast('Report saved: HazriBook_Report_'+d+'.html')}};
+})();
+
+/* ===== App shell: bottom tabs + Settings screen (old menu stays as it was) ===== */
+(function(){
+const $=id=>document.getElementById(id),E=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function mark(){const h=$('home').hidden;$('tbh').classList.toggle('on',!h);$('tbs').classList.toggle('on',h)}
+new MutationObserver(mark).observe($('home'),{attributes:true,attributeFilter:['hidden']});mark();
+$('tbh').onclick=()=>homeShow();$('tbs').onclick=()=>homeHide();$('tbl').onclick=()=>{homeHide();$('mlv').click()};
+function settings(){const u=firebase.auth().currentUser,who=u?E(u.displayName||'')+' &bull; '+E(u.email||''):'Not signed in';
+ const b=md('<div class="st"><h3>⚙️ Settings</h3><small>'+who+'</small>'+
+ '<h4>Account</h4><button class="gd" id="s1">🔑 Change password (email link)</button><button id="s2">🔄 Sync now (cloud)</button><button id="s3">🚪 Log out</button>'+
+ '<h4>Your data</h4><button class="gd" id="s4">💾 Save backup file (.json)</button><button class="gd" id="s5">📊 Save readable report</button><button id="s6">📂 Restore data from backup</button>'+
+ '<h4>Sheets</h4><button id="s7">➕ Add sheets</button><button id="s8">🔗 Live link for this sheet</button>'+
+ '<h4>About</h4><small>Hazri Book &bull; Attendance &amp; payment register<br>Your writing saves automatically on this phone and syncs to your cloud account.</small>'+
+ '<h4>Danger zone</h4><button class="dg" id="s9">🗑 Delete my account</button><button id="sz">Close</button><div class="am" id="sm"></div></div>');
+ const go=(id,t)=>{b.querySelector('#'+id).onclick=()=>{mdClose();$(t).click()}};
+ go('s2','msy');go('s3','mlo');go('s4','mbk');go('s5','mrp');go('s6','mrs');go('s7','mad');go('s8','mlv');go('s9','mda');
+ b.querySelector('#sz').onclick=mdClose;
+ b.querySelector('#s1').onclick=async()=>{const m=b.querySelector('#sm');if(!u||!u.email){m.textContent='Log in first.';return}
+  try{await firebase.auth().sendPasswordResetEmail(u.email);m.className='am good';m.textContent='A password reset link was sent to '+u.email+'. Check your inbox and spam folder.'}catch(e){m.className='am';m.textContent='Could not send the email. Check your internet and try again.'}}}
+$('tbg').onclick=settings;
 })();
 </script>
 </body></html>
